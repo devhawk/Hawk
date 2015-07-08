@@ -10,6 +10,17 @@ namespace HawkProto2
 {
     public class HomeController : Controller
     {
+        private readonly IModelRepository _repo;
+        
+        public HomeController(IModelRepository repo)
+        {
+            if (repo == null)
+            {
+                throw new ArgumentNullException(nameof(repo));
+            }
+            
+            this._repo = repo;
+        }
         
         [Route("")]
         public IActionResult Index()
