@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.AspNet.Mvc;
 
 namespace HawkProto2
@@ -23,10 +24,25 @@ namespace HawkProto2
             return Index(1);
         }
 
+        const int PAGE_SIZE = 5;
+        
         [Route("/page/{pageNum}")]
         public IActionResult Index(int pageNum)
         {
-            return Content($"HomeController.Index {pageNum}");
+            int skip = 0;
+            if (pageNum > 0)
+            {
+                skip = (pageNum - 1) * PAGE_SIZE;
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
+            
+            var posts = _repo.AllPosts().Skip(skip).Take(PAGE_SIZE);
+            
+            //  return Content($"HomeController.Index {pageNum}");
+            return View(posts);
         }
         
         [Route("archive")]
@@ -117,5 +133,18 @@ namespace HawkProto2
         {
             return Content($"HomeController.Tag {name} page #{pageNum}");
         }
+        
+        [Route("author/{name}")]
+        public IActionResult Author(string name)
+        {
+            return Author(name, 1);    
+        }
+        
+        [Route("author/{name}/page/{pageNum}")]
+        public IActionResult Author(string name, int pageNum)
+        {
+            return Content($"HomeController.Author {name} page #{pageNum}");
+        }
+        
     }
 }

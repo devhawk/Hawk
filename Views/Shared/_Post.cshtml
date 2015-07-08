@@ -1,0 +1,38 @@
+@model Post
+
+@*functions
+{
+    void RenderCommaSeperatedList(string intro, IEnumerable<MvcHtmlString> items)
+    {
+        int count = items.Count();
+        
+        if (count > 0)
+        {
+            Output.Write(intro);
+            Output.Write(" ");
+        }
+        
+        Output.Write(items.FirstOrDefault());
+        foreach (var item in items.Skip(1).Take(count - 2))
+        {
+            Output.Write(", ");
+            Output.Write(item);
+        }
+        if (count > 1)
+        {
+            Output.Write(" & ");
+            Output.Write(items.Last()); 
+        }
+    }
+}*@
+
+<h2>@Html.ActionLink(Model.Title, "Post", new { year = Model.Date.Year, month = Model.Date.Month, day = Model.Date.Day, slug = Model.Slug })</h2>
+<p>@Html.Raw(Model.RenderedContent.Value)</p>
+<p style="font-style:italic">
+    This entry was posted
+    by @Html.ActionLink(Model.Author.Name, "Author", new { name = Model.Author.Slug })
+    on @Html.ActionLink(Model.Date.ToString("MMMM dd, yyyy"), "PostsByDay", new { year = Model.Date.Year, month = Model.Date.Month, day = Model.Date.Day })
+    
+    @*{RenderCommaSeperatedList("in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })));}
+    @{RenderCommaSeperatedList("and tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug })));}*@
+</p>
