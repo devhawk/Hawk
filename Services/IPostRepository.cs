@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HawkProto2
 {
-    public interface IModelRepository
+    public interface IPostRepository
     {
         IEnumerable<Post> AllPosts();
         IEnumerable<Post> RecentPosts(int count, int skip = 0);

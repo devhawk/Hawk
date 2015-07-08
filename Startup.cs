@@ -10,7 +10,7 @@ namespace HawkProto2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddTransient<IModelRepository, ModelRepository>();
+            services.AddTransient<IPostRepository, MockPostRepository>();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

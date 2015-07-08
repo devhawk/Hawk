@@ -1,11 +1,22 @@
+using System;
 using Microsoft.AspNet.Mvc;
-
-// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace HawkProto2
 {
     public class FeedController : Controller
     {
+        private readonly IPostRepository _repo;
+        
+        public FeedController(IPostRepository repo)
+        {
+            if (repo == null)
+            {
+                throw new ArgumentNullException(nameof(repo));
+            }
+            
+            this._repo = repo;
+        }
+        
         [RouteAttribute("feed")]
         public IActionResult Index()
         {

@@ -5,9 +5,9 @@ namespace HawkProto2
 {
     public class HomeController : Controller
     {
-        private readonly IModelRepository _repo;
+        private readonly IPostRepository _repo;
         
-        public HomeController(IModelRepository repo)
+        public HomeController(IPostRepository repo)
         {
             if (repo == null)
             {
