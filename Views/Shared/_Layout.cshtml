@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DevHawk @ViewBag.Title</title>
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.2/cyborg/bootstrap.css" rel="stylesheet">
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://rawgit.com/isagalaev/highlight.js/master/src/styles/default.css" rel="stylesheet">
+
+    <style>
+        pre code {
+            display: block;
+            overflow-x: auto;
+            padding: 0.5em;
+            background: #f0f0f0;
+            -webkit-text-size-adjust: none;
+            -moz-text-size-adjust: none;
+            -ms-text-size-adjust: none;
+            text-size-adjust: none;
+        }
+        
+        .image-right { float:right; }
+        .image-left  { float:left;  }
+    </style>
+</head>
+<body>
+    <div class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("DevHawk", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("About", "About", "Home")</li>
+                    <li>@Html.ActionLink("Archive", "Archive", "Home")</li>
+                    <li>@Html.ActionLink("RSS", "Index", "Feed")</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" role="main">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    @RenderBody()
+                </div>
+                <div class="col-md-3" style="margin-left:10px">
+                    @*<h3 class="widget-title">My Sponsors</h3>
+                    <img src="http://lorempixel.com/240/400/technics/" />*@
+
+                    <h3>Categories</h3>
+                    @*{Html.RenderAction("Categories");}*@
+
+                    <h3>Tags</h3>
+                    @*{Html.RenderAction("TagCloud");}*@
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*helper  SocialLink(string url, string iconIdentifier)
+    {
+        <li>
+            <a href="@url">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x text-info"></i>
+                    <i class="fa @iconIdentifier fa-stack-1x fa-inverse"></i>
+                </span>
+            </a>
+        </li>
+    }*@
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        @*SocialLink("skype:harrypierson?call", "fa-skype")
+                        @SocialLink("skype:harrypierson?chat", "fa-weixin") @*stand in for skype chat logo*@
+                        @*SocialLink("https://account.xbox.com/enProfile?gamerTag=RayTracer", "fa-rebel") @*stand in for xbox live logo*@
+                        @*SocialLink("mailto:harry@devhawk.net", "fa-envelope")
+                        @SocialLink("http://twitter.com/devhawk", "fa-twitter")
+                        @SocialLink("http://facebook.com/devhawk", "fa-facebook")
+                        @SocialLink("https://github.com/devhawk/", "fa-github")
+                        @SocialLink("https://www.linkedin.com/in/harrypierson", "fa-linkedin")*@
+                    </ul>
+                    <p class="copyright text-muted text-center">Copyright &copy; Harry Pierson @DateTime.Now.Year</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+</body>
+</html>
