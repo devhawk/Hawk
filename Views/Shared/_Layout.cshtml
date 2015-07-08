@@ -1,3 +1,24 @@
+@using Microsoft.AspNet.Mvc.Rendering
+@using System.Text;
+
+@functions
+{
+    HtmlString SocialLink(string url, string iconIdentifier)
+    {
+        var tw = new StringCollectionTextWriter(Encoding.UTF8);
+        tw.WriteLine("\n<li>");
+        tw.Write("  <a href=\""); tw.Write(url); tw.WriteLine("\">");
+        tw.WriteLine("    <span class=\"fa-stack fa-lg\">");
+        tw.WriteLine("      <i class=\"fa fa-circle fa-stack-2x text-info\"></i>");
+        tw.Write("      <i class=\"fa "); tw.Write(iconIdentifier); tw.WriteLine(" fa-stack-1x fa-inverse\"></i>");
+        tw.WriteLine("    </span>");
+        tw.WriteLine("  </a>");
+        tw.Write("</li>");
+        
+        return new HtmlString(tw);
+    }
+}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +28,7 @@
     <title>DevHawk @ViewBag.Title</title>
 
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.css" rel="stylesheet">
-    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.2/cyborg/bootstrap.css" rel="stylesheet">
+    <!--<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.2/cyborg/bootstrap.css" rel="stylesheet">-->
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://rawgit.com/isagalaev/highlight.js/master/src/styles/default.css" rel="stylesheet">
 
@@ -36,13 +57,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("DevHawk", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                <a asp-action="Index" asp-controller="Home" class="navbar-brand">DevHawk</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Archive", "Archive", "Home")</li>
-                    <li>@Html.ActionLink("RSS", "Index", "Feed")</li>
+                    <li><a asp-action="About" asp-controller="Home">About</a></li>
+                    <li><a asp-action="Archive" asp-controller="Home">Archive</a></li>
+                    <li><a asp-action="Index" asp-controller="Feed">RSS</a></li>
                 </ul>
             </div>
         </div>
@@ -55,8 +76,8 @@
                     @RenderBody()
                 </div>
                 <div class="col-md-3" style="margin-left:10px">
-                    @*<h3 class="widget-title">My Sponsors</h3>
-                    <img src="http://lorempixel.com/240/400/technics/" />*@
+                    <h3 class="widget-title">My Sponsors</h3>
+                    <img src="http://lorempixel.com/240/400/technics/" />
 
                     <h3>Categories</h3>
                     @*{Html.RenderAction("Categories");}*@
@@ -68,32 +89,20 @@
         </div>
     </div>
 
-    @*helper  SocialLink(string url, string iconIdentifier)
-    {
-        <li>
-            <a href="@url">
-                <span class="fa-stack fa-lg">
-                    <i class="fa fa-circle fa-stack-2x text-info"></i>
-                    <i class="fa @iconIdentifier fa-stack-1x fa-inverse"></i>
-                </span>
-            </a>
-        </li>
-    }*@
-
     <!-- Footer -->
     <footer>
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <ul class="list-inline text-center">
-                        @*SocialLink("skype:harrypierson?call", "fa-skype")
+                        @SocialLink("skype:harrypierson?call", "fa-skype")
                         @SocialLink("skype:harrypierson?chat", "fa-weixin") @*stand in for skype chat logo*@
-                        @*SocialLink("https://account.xbox.com/enProfile?gamerTag=RayTracer", "fa-rebel") @*stand in for xbox live logo*@
-                        @*SocialLink("mailto:harry@devhawk.net", "fa-envelope")
+                        @SocialLink("https://account.xbox.com/enProfile?gamerTag=RayTracer", "fa-rebel") @*stand in for xbox live logo*@
+                        @SocialLink("mailto:harry@devhawk.net", "fa-envelope")
                         @SocialLink("http://twitter.com/devhawk", "fa-twitter")
                         @SocialLink("http://facebook.com/devhawk", "fa-facebook")
                         @SocialLink("https://github.com/devhawk/", "fa-github")
-                        @SocialLink("https://www.linkedin.com/in/harrypierson", "fa-linkedin")*@
+                        @SocialLink("https://www.linkedin.com/in/harrypierson", "fa-linkedin")
                     </ul>
                     <p class="copyright text-muted text-center">Copyright &copy; Harry Pierson @DateTime.Now.Year</p>
                 </div>
