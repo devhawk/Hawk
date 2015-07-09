@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace HawkProto2
@@ -19,8 +19,8 @@ namespace HawkProto2
         static FileSystemPostRepository()
         {
             var tempPosts = new List<Post>();
-            var dirs = Directory.EnumerateDirectories(PATH);
-            foreach (var dir in dirs)
+
+            foreach (var dir in Directory.EnumerateDirectories(PATH))
             {
                 var jsonItemText = File.ReadAllText(Path.Combine(dir, ITEM_JSON));
                 var jsonItem = JsonConvert.DeserializeObject<JsonItem>(jsonItemText);
@@ -30,7 +30,8 @@ namespace HawkProto2
 
                 // lazily load content since that will (likely) be stored seperately from metadata
                 jsonItem.Post.RenderedContent = new Lazy<string>(() => File.ReadAllText(Path.Combine(dir, ITEM_CONTENT)));
-                tempPosts .Add(jsonItem.Post);
+
+                tempPosts.Add(jsonItem.Post);
             }
 
             _posts = tempPosts.OrderByDescending(p => p.Date).ToList();

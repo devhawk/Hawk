@@ -27,7 +27,7 @@
             {
                 <li>
                     @MonthName(post.Date.Month) @post.Date.Day:
-                    <a asp-action="Post" asp-controller="Home" asp-route-slug="@post.Slug" asp-route-year="@post.Date.Year" asp-route-month="@post.Date.Month" asp-route-day="@post.Date.Day">@post.Title @CommentCount(post.Comments.Count)</a>
+                    <a asp-action="Post" asp-controller="Home" asp-route-slug="@post.Slug" asp-route-year="@post.Date.Year" asp-route-month="@post.Date.Month" asp-route-day="@post.Date.Day">@post.Title @CommentCount(post.CommentCount)</a>
                 </li>
             }
         </ul>

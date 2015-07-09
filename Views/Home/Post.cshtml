@@ -1,3 +1,20 @@
 @model Post
 
 @await Html.PartialAsync("_Post", Model);
+
+@if (Model.CommentCount > 0)
+{
+    <div>
+        <h3>Comments:</h3>
+        <ul>
+        @foreach (var comment in Model.Comments)
+        {
+            <li id="comment-@comment.Id">
+                <div>@comment.Name</div>
+                <div>@Html.Raw(comment.Content)</div>
+                <div>@comment.Date.ToString("MMMM d, yyyy") at @comment.Date.ToString("h:mm tt")</div>
+            </li>
+        }
+        </ul>
+    </div>
+}
