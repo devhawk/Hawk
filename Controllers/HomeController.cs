@@ -48,7 +48,7 @@ namespace HawkProto2
             var postCount = posts.Count();
             if (postCount == 0)
             {
-                return new HttpNotFoundResult();
+                return HttpNotFound();
             }
             
             // if the user asks for a page beyond the last page, redirect to the last page
@@ -70,13 +70,13 @@ namespace HawkProto2
         [Route("/page/{pageNum}")]
         public IActionResult IndexPage(int pageNum)
         {
-            return PostsHelper(_repo.AllPosts(), pageNum, "Index");
+            return PostsHelper(_repo.Posts(), pageNum, "Index");
         }
         
         [Route("archive")]
         public IActionResult Archive()
         {
-            var posts = _repo.AllPosts().ToArray();
+            var posts = _repo.Posts().ToArray();
             return View(posts);
         }
         
@@ -95,7 +95,7 @@ namespace HawkProto2
         [Route("{year:int}/page/{pageNum:int}")]
         public IActionResult PostsByYearPage(int year, int pageNum)
         {
-            return PostsHelper(_repo.AllPosts().Where(p => p.Date.Year == year), pageNum, "PostsByYear", new { year = year });
+            return PostsHelper(_repo.Posts().Where(p => p.Date.Year == year), pageNum, "PostsByYear", new { year = year });
         }
 
         [Route("{year:int}/{month:range(1,12)}")]
@@ -108,7 +108,7 @@ namespace HawkProto2
         public IActionResult PostsByMonthPage(int year, int month, int pageNum)
         {
             return PostsHelper(
-                _repo.AllPosts().Where(p => p.Date.Year == year && p.Date.Month == month), 
+                _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month), 
                 pageNum, "PostsByMonth", new { year = year, month = month });
         }
 
@@ -122,22 +122,32 @@ namespace HawkProto2
         public IActionResult PostsByDayPage(int year, int month, int day, int pageNum)
         {
             return PostsHelper(
-                _repo.AllPosts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day), 
+                _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day), 
                 pageNum, "PostsByMonth", new { year = year, month = month, day = day });
         }
 
         [Route("{year:int}/{month:range(1,12)}/{day:range(1,31)}/{slug}")]
         public IActionResult Post(int year, int month, int day, string slug)
         {
-            //TODO add date constraints
-            return Content($"HomeController.Post {year}-{month}-{day} {slug}");
+            var post = _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day && p.Slug == slug).FirstOrDefault();
+            if (post == null)
+            {
+                return HttpNotFound();
+            }
+            
+            return View("Post", post);
         }
 
         [Route("{slug}")]
         public IActionResult Post(string slug)
         {
-            //TODO add date constraints
-            return Content($"HomeController.Post {slug}");
+            var post = _repo.Posts().Where(p => p.Slug == slug).FirstOrDefault();
+            if (post == null)
+            {
+                return HttpNotFound();
+            }
+            
+            return View("Post", post);
         }
         
         [Route("category/{name}")]
@@ -150,7 +160,7 @@ namespace HawkProto2
         public IActionResult CategoryPage(string name, int pageNum)
         {
             return PostsHelper(
-                _repo.AllPosts().Where(p => p.Categories.Any(c => c.Slug == name)), 
+                _repo.Posts().Where(p => p.Categories.Any(c => c.Slug == name)), 
                 pageNum, "Category", new { name = name });
         }
         
@@ -164,7 +174,7 @@ namespace HawkProto2
         public IActionResult TagPage(string name, int pageNum)
         {
             return PostsHelper(
-                _repo.AllPosts().Where(p => p.Tags.Any(c => c.Slug == name)), 
+                _repo.Posts().Where(p => p.Tags.Any(c => c.Slug == name)), 
                 pageNum, "Tag", new { name = name });
         }
         
@@ -178,7 +188,7 @@ namespace HawkProto2
         public IActionResult AuthorPage(string name, int pageNum)
         {
             return PostsHelper(
-                _repo.AllPosts().Where(p => p.Author.Slug == name), 
+                _repo.Posts().Where(p => p.Author.Slug == name), 
                 pageNum, "Author", new { name = name });
         }
         
