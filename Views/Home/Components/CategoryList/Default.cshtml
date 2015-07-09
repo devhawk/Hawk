@@ -1,0 +1,16 @@
+@model IEnumerable<Tuple<Category, int>>
+
+@functions
+{
+    public static string GetCategoryTitle(Tuple<Category, int> cat)
+    {
+        return string.Format("{0} ({1})", cat.Item1.Title, cat.Item2);
+    }
+}
+
+<ul>
+    @foreach (var cat in Model)
+    {
+        <li><a asp-action="Category" asp-controller="Home" asp-route-name="@cat.Item1.Slug">@cat.Item1.Title (@cat.Item2)</a></li>
+    }
+</ul>

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.AspNet.Mvc;
 
 namespace HawkProto2
@@ -19,7 +20,8 @@ namespace HawkProto2
 
         public IViewComponentResult Invoke()
         {
-            return Content("CategoryListViewComponent");
+            var cats = _repo.Categories().ToArray();
+            return View(cats);
         }
     }
 }

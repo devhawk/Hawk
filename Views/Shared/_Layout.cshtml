@@ -80,10 +80,10 @@
                     <img src="http://lorempixel.com/240/400/technics/" />
 
                     <h3>Categories</h3>
-                    @*{Html.RenderAction("Categories");}*@
+                     @Component.Invoke("CategoryList")
 
                     <h3>Tags</h3>
-                    @*{Html.RenderAction("TagCloud");}*@
+                     @Component.Invoke("TagCloud")
                 </div>
             </div>
         </div>

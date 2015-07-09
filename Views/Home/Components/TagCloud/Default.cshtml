@@ -1,0 +1,27 @@
+@model IEnumerable<Tuple<Tag, int>>
+
+@functions
+{
+    public static string GetTagStyle(int min, int max, int count)
+    {
+        var weight = (Math.Log(count) - Math.Log(min)) / (Math.Log(max) - Math.Log(min));
+        var size = Math.Round(0.8f + (1.2f * weight), 1);
+        return string.Format("font-size:{0}em", size);
+    }
+}
+
+@{
+    float size_min = 0.8f;
+    float size_max = 2.0f;
+
+    int max = Model.Select(t => t.Item2).Max();
+    int min = max / 10;
+}
+
+<div>
+    @foreach (var tag in Model.Where(t => t.Item2 >= min).OrderBy(t => t.Item1.Title))
+    {
+        <a asp-action="Tag" asp-controller="Home" asp-route-name="@tag.Item1.Slug" style="@GetTagStyle(min, max, tag.Item2)">@tag.Item1.Title (@tag.Item2)</a>
+    }
+</div>
+
