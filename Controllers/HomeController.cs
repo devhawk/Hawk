@@ -57,7 +57,8 @@ namespace HawkProto2
         [Route("archive")]
         public IActionResult Archive()
         {
-            return Content("HomeController.Archive");
+            var posts = _repo.AllPosts().ToArray();
+            return View(posts);
         }
         
         [Route("about")]

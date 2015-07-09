@@ -1,0 +1,35 @@
+@model IEnumerable<Post>
+
+@{
+    ViewBag.Title = " Archive";
+}
+
+@functions
+{
+    string MonthName(int monthNumber)
+    {
+        return System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthNumber);
+    }
+
+    string CommentCount(int count) 
+    {
+        return count > 0 ? string.Format("({0} comments)", count) : string.Empty;
+    }
+}
+
+
+@foreach (var month in Model.GroupBy(p => new { Year = p.Date.Year, Month = p.Date.Month }))
+{
+    <ul>
+        <li><a asp-action="PostsByMonth" asp-controller="Home" asp-route-year="@month.Key.Year" asp-route-month="@month.Key.Month">@MonthName(month.Key.Month) @month.Key.Year</a></li>
+        <ul>
+            @foreach (var post in month)
+            {
+                <li>
+                    @MonthName(post.Date.Month) @post.Date.Day:
+                    <a asp-action="Post" asp-controller="Home" asp-route-slug="@post.Slug" asp-route-year="@post.Date.Year" asp-route-month="@post.Date.Month" asp-route-day="@post.Date.Day">@post.Title @CommentCount(post.Comments.Count)</a>
+                </li>
+            }
+        </ul>
+    </ul>
+}
