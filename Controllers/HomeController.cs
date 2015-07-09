@@ -36,6 +36,13 @@ namespace HawkProto2
             return IndexPage(1);
         }
         
+        private RouteValueDictionary GetRouteValues(int pageNum, object routeValues = null)
+        {
+            var routeValueDict = new RouteValueDictionary(routeValues);
+            routeValueDict.Add("pageNum", pageNum);
+            return routeValueDict;            
+        }
+        
         private IActionResult PostsHelper(IEnumerable<Post> posts, int pageNum, string action, object routeValues = null)
         {
             // if the user asks for a page less than or equal to zero, redirect to the first page
@@ -55,14 +62,16 @@ namespace HawkProto2
             var pageCount = postCount / PAGE_SIZE + (postCount % PAGE_SIZE == 0 ? 0 : 1);
             if (pageNum > pageCount)
             {
-                var routeValueDict = new RouteValueDictionary(routeValues);
-                routeValueDict.Add("pageNum", pageCount);
-
-                return RedirectToAction(action + "Page", routeValueDict);
+                return RedirectToAction(action + "Page", GetRouteValues(pageCount, routeValues));
             }
             
+            var actionPage = action + "Page";
             var skip = (pageNum - 1) * PAGE_SIZE;
             var pagePosts = posts.Skip(skip).Take(PAGE_SIZE).ToArray();
+            
+            ViewBag.PrevNextPageLinks = Tuple.Create(
+                pageNum == 1 ? string.Empty : Url.Action(actionPage, GetRouteValues(pageNum - 1, routeValues)),
+                pageNum == pageCount ? string.Empty : Url.Action(actionPage, GetRouteValues(pageNum + 1, routeValues)));
             
             return View("Index", pagePosts);
         }   

@@ -4,10 +4,15 @@
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
-    // ViewBag.Title = "IndexView Page";
+    var prevNextPageLinks = ViewBag.PrevNextPageLinks as Tuple<string, string>;
 }
 
 @foreach (var post in Model)
 {
-    @await Html.PartialAsync("_Post", post);
+    @Html.Partial("_Post", post);
+}
+
+@if (prevNextPageLinks != null)
+{
+    @await Html.PartialAsync("_PrevNextPage", prevNextPageLinks)
 }

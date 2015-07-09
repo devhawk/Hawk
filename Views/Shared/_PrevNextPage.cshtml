@@ -1,0 +1,13 @@
+@model Tuple<string, string>
+
+<div class="text-center">
+    @if (!string.IsNullOrWhiteSpace(Model.Item1))
+    {
+        <a class="btn btn-default" href="@Model.Item1">← Older Posts</a>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.Item2))
+    {
+        <a class="btn btn-default" href="@Model.Item2">Newer Posts →</a>
+    }
+</div>
