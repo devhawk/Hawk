@@ -68,7 +68,7 @@ namespace HawkProto2
                             xw.WriteElementString("category", tag.Title);
                         }
                         xw.WriteStartElement("content", "encoded", "http://purl.org/rss/1.0/modules/content/");
-                        xw.WriteCData(post.RenderedContent.Value);
+                        xw.WriteCData(post.Content.Value);
                         xw.WriteEndElement(); // content:encoded
                         xw.WriteEndElement(); // item
                     }

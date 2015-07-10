@@ -1,4 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 
@@ -10,7 +16,7 @@ namespace HawkProto2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddTransient<IPostRepository, FileSystemPostRepository>();
+            services.AddTransient<IPostRepository, WPExportFileSystemPostRepository>();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
@@ -19,8 +25,6 @@ namespace HawkProto2
             loggerFactory.AddConsole();
             
             app.UseMvcWithDefaultRoute();
-            
-            // TODO: add devhawk redirect code
         }
     }
 }
