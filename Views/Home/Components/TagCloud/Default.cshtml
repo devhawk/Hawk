@@ -14,7 +14,7 @@
     float size_min = 0.8f;
     float size_max = 2.0f;
 
-    int max = Model.Select(t => t.Item2).Max();
+    int max = Model.Count() == 0 ? 0 : Model.Select(t => t.Item2).Max();
     int min = max / 10;
 }
 

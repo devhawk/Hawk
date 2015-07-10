@@ -59,14 +59,6 @@ namespace HawkProto2
 
         public int CommentCount { get; set; }
 
-        public string PostKey
-        {
-            get
-            {
-                return $"{Date.ToString("yyyyMMdd-HHmm")}- {Slug}";
-            }
-        }
-        
         public Lazy<string> Content { get; set; }
         public Lazy<IEnumerable<Comment>> Comments { get; set; }
     }
