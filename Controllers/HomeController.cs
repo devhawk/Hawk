@@ -92,7 +92,7 @@ namespace HawkProto2
         [Route("about")]
         public IActionResult About()
         {
-            return Content("HomeController.About");
+            return View();
         }
         
         [Route("{year:int}")]
