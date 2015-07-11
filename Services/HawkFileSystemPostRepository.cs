@@ -147,8 +147,8 @@ namespace HawkProto2
                     Author = jsonItem.Author,
                     CommentCount = jsonItem.CommentCount,
 
-                    Content = new Lazy<string>(() => File.ReadAllText(Path.Combine(dir, ITEM_CONTENT))),
-                    Comments = new Lazy<IEnumerable<Comment>>(() => 
+                    Content = () => File.ReadAllText(Path.Combine(dir, ITEM_CONTENT)),
+                    Comments = () => 
                         {
                             var text = File.ReadAllText(Path.Combine(dir, COMMENTS_JSON));
                             return JsonConvert.DeserializeObject<FSComment[]>(text)
@@ -159,7 +159,7 @@ namespace HawkProto2
                                         Date = fsc.Date,
                                         Author = fsc.Author, 
                                     });
-                        }),
+                        },
                 };
 
                 tempPosts.Add(post);

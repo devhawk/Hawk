@@ -223,8 +223,8 @@ namespace HawkProto2
                     Tags = jsonItem.Post.Tags.Select(c => new Category { Title = c.Title, Slug = c.Slug }).ToList(),
                     Author = new PostAuthor { Name = jsonItem.Post.Author.Name, Slug = jsonItem.Post.Author.Slug },       
                     CommentCount = jsonItem.Post.Comments.Count,
-                    Content = new Lazy<string>(() => File.ReadAllText(Path.Combine(dir, ITEM_CONTENT))),
-                    Comments = new Lazy<IEnumerable<Comment>>(() => jsonItem.Post.Comments.Select(wpc => new Comment
+                    Content = () => File.ReadAllText(Path.Combine(dir, ITEM_CONTENT)),
+                    Comments = () => jsonItem.Post.Comments.Select(wpc => new Comment
                         {
                             Id = wpc.Id,
                             Content = wpc.Content,
@@ -234,7 +234,7 @@ namespace HawkProto2
                                 Name = wpc.Name,
                                 Url = wpc.Url,
                             },
-                        })),
+                        }),
                 };
 
                 tempPosts.Add(post);

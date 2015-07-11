@@ -59,8 +59,8 @@ namespace HawkProto2
 
         public int CommentCount { get; set; }
 
-        public Lazy<string> Content { get; set; }
-        public Lazy<IEnumerable<Comment>> Comments { get; set; }
+        public Func<string> Content { get; set; }
+        public Func<IEnumerable<Comment>> Comments { get; set; }
     }
 
 }

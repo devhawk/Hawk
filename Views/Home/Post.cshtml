@@ -7,7 +7,7 @@
     <div>
         <h3>Comments:</h3>
         <ul>
-        @foreach (var comment in Model.Comments.Value)
+        @foreach (var comment in Model.Comments())
         {
             <li id="comment-@comment.Id">
                 <div>@comment.Author.Name</div>
