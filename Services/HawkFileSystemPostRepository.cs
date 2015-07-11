@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
-using Microsoft.Framework.Logging;
+using Microsoft.Framework.Caching.Memory;
 
 namespace HawkProto2
 {
@@ -126,9 +126,20 @@ namespace HawkProto2
         static Tuple<Category, int>[] _categories = null;
         static Dictionary<Guid, Post> _indexDasBlogEntryId = new Dictionary<Guid, Post>();
         static Dictionary<string, Post> _indexDasBlogTitle = new Dictionary<string, Post>();
+        static IMemoryCache _cache = null;
+
+        static TItem Memoize<TItem>(IMemoryCache cache, string key, Func<string, TItem> func)
+        {
+            TItem item;
+            return cache.TryGetValue<TItem>(key, out item)
+                ? item 
+                : cache.Set<TItem>(key, func(key));
+        }
 
         static HawkFileSystemPostRepository()
         {
+            _cache = new MemoryCache(new MemoryCacheOptions());
+
             var tempPosts = new List<Post>();
 
             foreach (var dir in Directory.EnumerateDirectories(PATH))
@@ -147,19 +158,16 @@ namespace HawkProto2
                     Author = jsonItem.Author,
                     CommentCount = jsonItem.CommentCount,
 
-                    Content = () => File.ReadAllText(Path.Combine(dir, ITEM_CONTENT)),
-                    Comments = () => 
-                        {
-                            var text = File.ReadAllText(Path.Combine(dir, COMMENTS_JSON));
-                            return JsonConvert.DeserializeObject<FSComment[]>(text)
-                                .Select(fsc => new Comment
-                                    {
-                                        Id = fsc.Id,
-                                        Content = fsc.Content,
-                                        Date = fsc.Date,
-                                        Author = fsc.Author, 
-                                    });
-                        },
+                    Content = () => Memoize(_cache, Path.Combine(dir, ITEM_CONTENT), key => File.ReadAllText(key)), 
+                    Comments = () => Memoize(_cache, Path.Combine(dir, COMMENTS_JSON), 
+                        key => JsonConvert.DeserializeObject<FSComment[]>(File.ReadAllText(key))
+                            .Select(fsc => new Comment
+                                {
+                                    Id = fsc.Id,
+                                    Content = fsc.Content,
+                                    Date = fsc.Date,
+                                    Author = fsc.Author, 
+                                })),
                 };
 
                 tempPosts.Add(post);
