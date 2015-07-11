@@ -76,6 +76,7 @@ namespace HawkProto2
                 {
                     Name = a[0],
                     Slug = a[1],
+                    Email = a[2],
                 };
             } 
         }

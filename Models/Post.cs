@@ -44,6 +44,7 @@ namespace HawkProto2
     {
         public string Name { get; set; }
         public string Slug { get; set; }
+        public string Email { get; set; }
     }
 
     public class Post

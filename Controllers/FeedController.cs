@@ -64,7 +64,7 @@ namespace HawkProto2
                         var postAbsUrl = new Uri(rootUrl, postRelUrl);
                         xw.WriteElementString("link", postAbsUrl.ToString());
                         xw.WriteElementString("guid", postAbsUrl.ToString());
-                        xw.WriteElementString("author", $"harry@devhawk.net ({post.Author.Name})"); // TODO: author should be email address
+                        xw.WriteElementString("author", $"{post.Author.Email} ({post.Author.Name})"); 
                         xw.WriteElementString("pubDate", post.Date.ToString("r"));
                         foreach (var cat in post.Categories)
                         {
@@ -139,6 +139,7 @@ namespace HawkProto2
 
                         xw.WriteStartElement(null, "author", "http://www.w3.org/2005/Atom");
                         xw.WriteElementString(null, "name", "http://www.w3.org/2005/Atom", post.Author.Name);
+                        xw.WriteElementString(null, "email", "http://www.w3.org/2005/Atom", post.Author.Email);
                         xw.WriteEndElement(); // link
 
                         foreach (var cat in post.Categories)
