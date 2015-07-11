@@ -82,8 +82,8 @@ namespace HawkProto2
             return PostsHelper(_repo.Posts(), pageNum, "Index");
         }
         
-        [Route("archive")]
-        public IActionResult Archive()
+        [Route("archives")]
+        public IActionResult Archives()
         {
             var posts = _repo.Posts().ToArray();
             return View(posts);

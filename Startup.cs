@@ -24,6 +24,15 @@ namespace HawkProto2
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
             
+            //  var logger = loggerFactory.CreateLogger("Test");
+            //  app.Use (next => async context =>
+            //  {
+            //      logger.LogInformation(context.Request.Path);
+            //      await next(context);
+            //      logger.LogInformation(context.Response.StatusCode.ToString());
+            //  });
+            
+            app.UseMiddleware<DasBlogRedirector>();
             app.UseMvcWithDefaultRoute();
         }
     }

@@ -269,5 +269,15 @@ namespace HawkProto2
         {
             return _categories;  
         }
+        
+        public Post PostByDasBlogEntryId(Guid entryId)
+        {
+            return null;
+        }
+        
+        public Post PostByDasBlogTitle(string title)
+        {
+            return null;
+        }
     }
 }

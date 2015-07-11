@@ -10,7 +10,7 @@ namespace HawkProto2
 	public class FSDasBlogCompat
 	{
         [JsonProperty("entry-id")]
-	    public string EntryId { get; set; }
+	    public Guid EntryId { get; set; }
 	    [JsonProperty("slug")]
 		public string Slug { get; set; }
 	    [JsonProperty("unique-slug")]
@@ -118,11 +118,14 @@ namespace HawkProto2
         const string PATH = @"E:\dev\DevHawk\HawkContent";
         const string ITEM_JSON = "hawk-post.json";
         const string COMMENTS_JSON = "hawk-comments.json";
+        const string DASBLOG_COMPAT_JSON = "hawk-dasblog-compat.json";
         const string ITEM_CONTENT = "rendered-content.html";
         
         static Post[] _posts = null;
         static Tuple<Category, int>[] _tags = null;
         static Tuple<Category, int>[] _categories = null;
+        static Dictionary<Guid, Post> _indexDasBlogEntryId = new Dictionary<Guid, Post>();
+        static Dictionary<string, Post> _indexDasBlogTitle = new Dictionary<string, Post>();
 
         static HawkFileSystemPostRepository()
         {
@@ -160,6 +163,15 @@ namespace HawkProto2
                 };
 
                 tempPosts.Add(post);
+                
+                var compatFilePath = Path.Combine(dir, DASBLOG_COMPAT_JSON);
+                if (File.Exists(compatFilePath))
+                {
+                    var compatItem = JsonConvert.DeserializeObject<FSDasBlogCompat>(File.ReadAllText(compatFilePath));
+                    
+                    _indexDasBlogEntryId[compatItem.EntryId] = post;
+                    _indexDasBlogTitle[compatItem.Slug.ToLower()] = post;
+                }
             }
   
             _posts = tempPosts.OrderByDescending(p => p.Date).ToArray();
@@ -190,6 +202,17 @@ namespace HawkProto2
         public IEnumerable<Tuple<Category, int>> Categories()
         {
             return _categories;  
+        }
+        
+        public Post PostByDasBlogEntryId(Guid entryId)
+        {
+            return _indexDasBlogEntryId.ContainsKey(entryId) ? _indexDasBlogEntryId[entryId] : null;
+        }
+        
+        public Post PostByDasBlogTitle(string title)
+        {
+            title = title.ToLower();
+            return _indexDasBlogTitle.ContainsKey(title) ? _indexDasBlogTitle[title] : null;
         }
     }
 }

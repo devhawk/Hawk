@@ -8,5 +8,8 @@ namespace HawkProto2
         IEnumerable<Post> Posts();
         IEnumerable<Tuple<Category, int>> Tags();
         IEnumerable<Tuple<Category, int>> Categories();
+            
+        Post PostByDasBlogEntryId(Guid entryId);
+        Post PostByDasBlogTitle(string title);
     }
 }
