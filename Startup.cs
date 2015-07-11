@@ -24,13 +24,16 @@ namespace HawkProto2
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
             
-            //  var logger = loggerFactory.CreateLogger("Test");
-            //  app.Use (next => async context =>
-            //  {
-            //      logger.LogInformation(context.Request.Path);
-            //      await next(context);
-            //      logger.LogInformation(context.Response.StatusCode.ToString());
-            //  });
+            var logger = loggerFactory.CreateLogger("404 Tracker");
+            app.Use (next => async context =>
+            {
+                await next(context);
+                
+                if (context.Response.StatusCode == 404)
+                {
+                    logger.LogInformation("{Path}{QueryString} Not Found", context.Request.Path, context.Request.QueryString);
+                }
+            });
             
             app.UseMiddleware<DasBlogRedirector>();
             app.UseMvcWithDefaultRoute();

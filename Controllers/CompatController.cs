@@ -1,23 +1,29 @@
 using System;
-using System.Linq;
-using System.Text;
-using System.Xml;
+
 using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.Logging;
 
 namespace HawkProto2
 {
     public class CompatController : Controller
     {
         private readonly IPostRepository _repo;
+        private readonly ILogger _logger;
         
-        public CompatController(IPostRepository repo)
+        public CompatController(IPostRepository repo, ILoggerFactory loggerFactory)
         {
             if (repo == null)
             {
                 throw new ArgumentNullException(nameof(repo));
             }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
             
             this._repo = repo;
+            this._logger = loggerFactory.CreateLogger("CompatController");
         }
         
         IActionResult GetPostAction(Post post)
@@ -33,6 +39,8 @@ namespace HawkProto2
                     day = post.Date.Day,
                     slug = post.Slug,
                 });
+                
+            _logger.LogInformation("Redirecting {Path}{Query} to {url}", Request.Path, Request.Query, url);
             return new RedirectResult(url, true);
         }
         

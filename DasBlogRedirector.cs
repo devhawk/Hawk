@@ -133,11 +133,10 @@ namespace HawkProto2
 						
 		static string GetRedirectUrl(HttpRequest req, ILogger logger)
 		{
-			
 			// All dasBlog urls end with .aspx. Bail out immediately for URLs that don't end in .aspx
 			if (req.Path.HasValue && req.Path.Value.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
 			{
-				logger.LogInformation("{Path}{QueryString}", req.Path, req.QueryString);
+				
                 return GetRedirector(logger)(req.Path.Value, req.Query.Get);
 			}
 
@@ -159,6 +158,7 @@ namespace HawkProto2
 			}
 			else
 			{
+				logger.LogInformation("Redirecting {Path}{QueryString} to {redirectUrl}", context.Request.Path, context.Request.QueryString, redirectUrl);
 				context.Response.Redirect(redirectUrl, true);
 			}
 		}
