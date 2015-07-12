@@ -47,12 +47,18 @@ namespace HawkProto2
         public IActionResult EntryId(Guid id)
         {
             return GetPostAction(_repo.PostByDasBlogEntryId(id));
-
         }
         
-        public IActionResult Title(string id)
+        [Route("compat/title/{title}")]
+        public IActionResult Title(string title)
         {
-            return GetPostAction(_repo.PostByDasBlogTitle(id));
+            return GetPostAction(_repo.PostByDasBlogTitle(title));
+        }
+
+        [Route("compat/unique-title/{date}/{title}")]
+        public IActionResult Title(DateTimeOffset date, string title)
+        {
+            return GetPostAction(_repo.PostByDasBlogTitle(title, date));
         }
         
 	}

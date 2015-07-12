@@ -11,10 +11,10 @@ namespace HawkProto2
 	{
         [JsonProperty("entry-id")]
 	    public Guid EntryId { get; set; }
-	    [JsonProperty("slug")]
-		public string Slug { get; set; }
-	    [JsonProperty("unique-slug")]
-		public string UniqueSlug { get; set; }
+	    [JsonProperty("title")]
+		public string Title { get; set; }
+	    [JsonProperty("unique-title")]
+		public string UniqueTitle { get; set; }
 	}
 	
 	public class FSPost
@@ -179,7 +179,8 @@ namespace HawkProto2
                     var compatItem = JsonConvert.DeserializeObject<FSDasBlogCompat>(File.ReadAllText(compatFilePath));
                     
                     _indexDasBlogEntryId[compatItem.EntryId] = post;
-                    _indexDasBlogTitle[compatItem.Slug.ToLower()] = post;
+                    _indexDasBlogTitle[compatItem.Title.ToLower()] = post;
+                    _indexDasBlogTitle[compatItem.UniqueTitle.ToLower()] = post;
                 }
             }
   
@@ -220,8 +221,14 @@ namespace HawkProto2
         
         public Post PostByDasBlogTitle(string title)
         {
-            title = title.ToLower();
-            return _indexDasBlogTitle.ContainsKey(title) ? _indexDasBlogTitle[title] : null;
+            var key = title.ToLower();
+            return _indexDasBlogTitle.ContainsKey(key) ? _indexDasBlogTitle[key] : null;
+        }
+        
+        public Post PostByDasBlogTitle(string title, DateTimeOffset date)
+        {
+            var key = date.ToString("yyyy/MM/dd/") + title;
+            return PostByDasBlogTitle(key);
         }
     }
 }

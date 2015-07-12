@@ -279,5 +279,10 @@ namespace HawkProto2
         {
             return null;
         }
+        
+        public Post PostByDasBlogTitle(string title, DateTimeOffset date)
+        {
+            return null;
+        }
     }
 }

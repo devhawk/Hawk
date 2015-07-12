@@ -11,5 +11,6 @@ namespace HawkProto2
             
         Post PostByDasBlogEntryId(Guid entryId);
         Post PostByDasBlogTitle(string title);
+        Post PostByDasBlogTitle(string title, DateTimeOffset date);
     }
 }
