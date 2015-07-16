@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Microsoft.Framework.Caching.Memory;
 
 namespace HawkProto2
-{
+{    
     class HawkFileSystemPostRepository : IPostRepository
     {
         const string PATH = @"E:\dev\DevHawk\HawkContent";
@@ -16,12 +16,13 @@ namespace HawkProto2
         const string DASBLOG_COMPAT_JSON = "hawk-dasblog-compat.json";
         const string ITEM_CONTENT = "rendered-content.html";
         
-        Post[] _posts = null;
-        Tuple<Category, int>[] _tags = null;
-        Tuple<Category, int>[] _categories = null;
+        Post[] _posts;
+        Tuple<Category, int>[] _tags;
+        Tuple<Category, int>[] _categories;
+        IMemoryCache _cache;
         Dictionary<Guid, Post> _indexDasBlogEntryId = new Dictionary<Guid, Post>();
         Dictionary<string, Post> _indexDasBlogTitle = new Dictionary<string, Post>();
-
+        
         public IEnumerable<Post> Posts() 
         {
              return _posts; 
@@ -74,9 +75,10 @@ namespace HawkProto2
                     };
                 });
         }
-        
+
         HawkFileSystemPostRepository(IEnumerable<BlogEntry> blogEntries)
         {
+            _cache = new MemoryCache(new MemoryCacheOptions());
             var tempPosts = new List<Post>();
             
             foreach (var entry in blogEntries)
@@ -92,16 +94,16 @@ namespace HawkProto2
                     Author = entry.Post.Author,
                     CommentCount = entry.Post.CommentCount,
 
-                    Content = () => Task.Run(() => File.ReadAllText(Path.Combine(entry.Directory, ITEM_CONTENT))),
-                    Comments = () => Task.Run(() => JsonConvert
-                        .DeserializeObject<FSComment[]>(File.ReadAllText(Path.Combine(entry.Directory, COMMENTS_JSON)))
+                    Content = () => _cache.Memoize(Path.Combine(entry.Directory, ITEM_CONTENT), key => Task.Run(() => File.ReadAllText(key))),
+                    Comments = () => _cache.Memoize(Path.Combine(entry.Directory, COMMENTS_JSON), key => Task.Run(() => JsonConvert
+                        .DeserializeObject<FSComment[]>(File.ReadAllText(key))
                         .Select(fsc => new Comment
                             {
                                 Id = fsc.Id,
                                 Content = fsc.Content,
                                 Date = fsc.Date,
                                 Author = fsc.Author, 
-                            })),
+                            }))),
                 };
 
                 tempPosts.Add(post);
@@ -250,64 +252,3 @@ namespace HawkProto2
 
     }
 }
-
-            // change from using static constructor to using a specific instance 
-            
-            
-            //  _cache = new MemoryCache(new MemoryCacheOptions());
-
-//              var tempPosts = new List<Post>();
-//  
-//              foreach (var dir in Directory.EnumerateDirectories(PATH))
-//              {
-//                  var jsonItemText = File.ReadAllText(Path.Combine(dir, ITEM_JSON));
-//                  var jsonItem = JsonConvert.DeserializeObject<FSPost>(jsonItemText);
-//                  
-//                  
-//                  var compatFilePath = Path.Combine(dir, DASBLOG_COMPAT_JSON);
-//                  if (File.Exists(compatFilePath))
-//                  {
-//                      var compatItem = JsonConvert.DeserializeObject<FSDasBlogCompat>(File.ReadAllText(compatFilePath));
-//                      
-//                      _indexDasBlogEntryId[compatItem.EntryId] = post;
-//                      _indexDasBlogTitle[compatItem.Title.ToLower()] = post;
-//                      _indexDasBlogTitle[compatItem.UniqueTitle.ToLower()] = post;
-//                  }
-//              }
-//    
-//              _posts = tempPosts.OrderByDescending(p => p.Date).ToArray();
-//              
-//              _tags = _posts
-//                  .SelectMany(p => p.Tags)
-//                  .GroupBy(c => c.Slug)
-//                  .Select(g => Tuple.Create(g.First(), g.Count()))
-//                  .ToArray();
-//                  
-//              _categories = _posts
-//                  .SelectMany(p => p.Categories)
-//                  .GroupBy(c => c.Slug)
-//                  .Select(g => Tuple.Create(g.First(), g.Count()))
-//                  .ToArray();
-
-//          IMemoryCache _cache = null;
-//  
-//          static TItem Memoize<TItem>(IMemoryCache cache, string key, Func<string, TItem> func)
-//          {
-//              TItem item;
-//              return cache.TryGetValue<TItem>(key, out item)
-//                  ? item 
-//                  : cache.Set<TItem>(key, func(key));
-//          }
-
-//                  var post = new Post()
-//                  {
-//                      Slug = jsonItem.Slug,
-//                      Title = System.Net.WebUtility.HtmlDecode(jsonItem.Title),
-//                      Date = jsonItem.Date,
-//                      DateModified = jsonItem.DateModified,
-//                      Categories = jsonItem.Categories.ToList(),
-//                      Tags = jsonItem.Tags.ToList(),
-//                      Author = jsonItem.Author,
-//                      CommentCount = jsonItem.CommentCount,
-//  
-//                  };
