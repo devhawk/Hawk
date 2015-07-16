@@ -8,10 +8,7 @@
         var tw = new StringCollectionTextWriter(Encoding.UTF8);
         tw.WriteLine("\n<li>");
         tw.Write("  <a href=\""); tw.Write(url); tw.WriteLine("\">");
-        tw.WriteLine("    <span class=\"fa-stack fa-lg\">");
-        tw.WriteLine("      <i class=\"fa fa-circle fa-stack-2x text-info\"></i>");
-        tw.Write("      <i class=\"fa "); tw.Write(iconIdentifier); tw.WriteLine(" fa-stack-1x fa-inverse\"></i>");
-        tw.WriteLine("    </span>");
+        tw.Write("      <i class=\"fi-"); tw.Write(iconIdentifier); tw.WriteLine(" style1\"></i>");
         tw.WriteLine("  </a>");
         tw.Write("</li>");
         
@@ -28,11 +25,7 @@
     <title>DevHawk @ViewBag.Title</title>
 
     <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
-    @*<link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" rel="stylesheet">*@
-    <link href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.5/spacelab/bootstrap.min.css" rel="stylesheet">
-    @*<link href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.5/cyborg/bootstrap.min.css" rel="stylesheet">*@
-    @*<link href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.5/darkly/bootstrap.min.css" rel="stylesheet">*@
-    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet">
     <link href="http://rawgit.com/isagalaev/highlight.js/master/src/styles/default.css" rel="stylesheet">
 
     <style>
@@ -49,6 +42,12 @@
         
         .image-right { float:right; }
         .image-left  { float:left;  }
+        
+        .style1 {
+            font-size: 50px;
+            /*color: #B8D30B;*/
+        }
+
     </style>
 </head>
 <body>
@@ -104,14 +103,14 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <ul class="list-inline text-center">
-                        @SocialLink("skype:harrypierson?call", "fa-skype")
-                        @SocialLink("skype:harrypierson?chat", "fa-weixin") @*stand in for skype chat logo*@
-                        @SocialLink("https://account.xbox.com/enProfile?gamerTag=RayTracer", "fa-rebel") @*stand in for xbox live logo*@
-                        @SocialLink("mailto:harry@devhawk.net", "fa-envelope")
-                        @SocialLink("http://twitter.com/devhawk", "fa-twitter")
-                        @SocialLink("http://facebook.com/devhawk", "fa-facebook")
-                        @SocialLink("https://github.com/devhawk/", "fa-github")
-                        @SocialLink("https://www.linkedin.com/in/harrypierson", "fa-linkedin")
+                        @SocialLink("skype:harrypierson", "social-skype")
+                        @SocialLink("mailto:harry@devhawk.net", "mail")
+                        @SocialLink("https://github.com/devhawk/", "social-github")
+                        @SocialLink("http://stackoverflow.com/users/1179731/devhawk", "social-stack-overflow")
+                        @SocialLink("http://twitter.com/devhawk", "social-twitter")
+                        @SocialLink("http://facebook.com/devhawk", "social-facebook")
+                        @SocialLink("https://www.linkedin.com/in/harrypierson", "social-linkedin")
+                        @SocialLink("http://live.xbox.com/member/RayTracer", "social-xbox") 
                     </ul>
                     <p class="copyright text-muted text-center">Copyright &copy; Harry Pierson @DateTime.Now.Year</p>
                 </div>
