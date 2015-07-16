@@ -1,5 +1,9 @@
 @model Post
 
+@{
+    Layout = "_BlogLayout";
+}
+
 @await Html.PartialAsync("_Post", Model)
 
 @if (Model.CommentCount > 0)
