@@ -21,7 +21,7 @@
 <div>
     @foreach (var tag in Model.Where(t => t.Item2 >= min).OrderBy(t => t.Item1.Title))
     {
-        <a asp-action="Tag" asp-route-name="@tag.Item1.Slug" style="@GetTagStyle(min, max, tag.Item2)">@tag.Item1.Title (@tag.Item2)</a>
+        <a asp-action="Tag" asp-controller="Blog" asp-route-name="@tag.Item1.Slug" style="@GetTagStyle(min, max, tag.Item2)">@tag.Item1.Title (@tag.Item2)</a>
     }
 </div>
 
