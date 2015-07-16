@@ -170,9 +170,9 @@ namespace HawkProto2
 
                 tempPosts.Add(post);
                                     
-                if (entity.Properties.ContainsKey("DasBlogentityId"))
+                if (entity.Properties.ContainsKey("DasBlogEntryId"))
                 {
-                    _indexDasBlogEntryId[entity.Properties["DasBlogentityId"].GuidValue.Value] = post;
+                    _indexDasBlogEntryId[entity.Properties["DasBlogEntryId"].GuidValue.Value] = post;
                 }
                 if (entity.Properties.ContainsKey("DasBlogTitle"))
                 {
