@@ -11,6 +11,7 @@ using Azure = Microsoft.WindowsAzure.Storage;
 
 namespace HawkProto2
 {
+    // TODO: Redirect /yyyy/MM/dd/slug and /slug entries to /blog/yyyy/MM/dd/slug
     public class Startup
     {
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940

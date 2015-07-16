@@ -31,7 +31,7 @@
     }
 }
 
-<h2><a asp-action="Post" asp-controller="Home" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day" asp-route-slug="@Model.Slug">@Model.Title</a></h2>
+<h2><a asp-action="Post" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day" asp-route-slug="@Model.Slug">@Model.Title</a></h2>
 <div>
     @Html.Raw(await Model.Content())
 </div>

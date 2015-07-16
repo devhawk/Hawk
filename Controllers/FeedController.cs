@@ -8,8 +8,33 @@ using Microsoft.AspNet.Mvc;
 
 namespace HawkProto2
 {
+    class TextWriterResult : IActionResult
+    {
+        Func<TextWriter, Task> _func;
+        public TextWriterResult(string contentType, Func<TextWriter, Task> func)
+        {
+            ContentType = contentType;
+            _func = func;
+        }
+        
+        public string ContentType { get; set; }
+        
+        public async Task ExecuteResultAsync(ActionContext context)
+        {
+            var response = context.HttpContext.Response;
+            response.ContentType = ContentType;
+            
+            using (var writer = new HttpResponseStreamWriter(response.Body, Encoding.UTF8))
+            {
+                await _func(writer);
+            }
+        }
+    }
+
     public class FeedController : Controller
     {
+        static readonly Uri ROOT_URL = new Uri("http://localhost:5000");
+
         private readonly IPostRepository _repo;
         
         public FeedController(IPostRepository repo)
@@ -28,33 +53,8 @@ namespace HawkProto2
             return Rss();
         }
         
-        class TextWriterResult : IActionResult
-        {
-            Func<TextWriter, Task> _func;
-            public TextWriterResult(string contentType, Func<TextWriter, Task> func)
-            {
-                ContentType = contentType;
-                _func = func;
-            }
-            
-            public string ContentType { get; set; }
-            
-            public async Task ExecuteResultAsync(ActionContext context)
-            {
-                var response = context.HttpContext.Response;
-                response.ContentType = ContentType;
-                
-                using (var writer = new HttpResponseStreamWriter(response.Body, Encoding.UTF8))
-                {
-                    await _func(writer);
-                }
-            }
-        }
-        
         async Task RssAsync(TextWriter writer)
         {
-            var rootUrl = new Uri("http://devhawk.net");
-
             var settings = new XmlWriterSettings()
             {
                 Indent = true,
@@ -67,11 +67,11 @@ namespace HawkProto2
                 xw.WriteAttributeString("version", "2.0");
                 xw.WriteStartElement("channel");
                 xw.WriteElementString("title", "DevHawk");
-                xw.WriteElementString("link", rootUrl.ToString());
+                xw.WriteElementString("link", ROOT_URL.ToString());
                 xw.WriteElementString("description", "Passion * Technology * Ruthless Competence");
 
                 xw.WriteStartElement("atom", "link", "http://www.w3.org/2005/Atom");
-                xw.WriteAttributeString("href", new Uri(rootUrl, Url.Action("Rss", "Feed")).ToString());
+                xw.WriteAttributeString("href", new Uri(ROOT_URL, Url.Action("Rss", "Feed")).ToString());
                 xw.WriteAttributeString("rel", "self");
                 xw.WriteAttributeString("type", "application/rss+xml");
                 xw.WriteEndElement(); // atom:link
@@ -81,8 +81,8 @@ namespace HawkProto2
                     xw.WriteStartElement("item");
                     xw.WriteElementString("title", post.Title);
                     
-                    var postRelUrl = Url.Action("Post", "Home", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = post.Slug });
-                    var postAbsUrl = new Uri(rootUrl, postRelUrl);
+                    var postRelUrl = Url.Action("Post", "Blog", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = post.Slug });
+                    var postAbsUrl = new Uri(ROOT_URL, postRelUrl);
                     xw.WriteElementString("link", postAbsUrl.ToString());
                     xw.WriteElementString("guid", postAbsUrl.ToString());
                     xw.WriteElementString("author", $"{post.Author.Email} ({post.Author.Name})"); 
@@ -119,8 +119,6 @@ namespace HawkProto2
         
         async Task AtomAsync(TextWriter writer)
         {
-            var rootUrl = new Uri("http://devhawk.net");
-            
             var settings = new XmlWriterSettings()
             {
                 Indent = true,
@@ -132,17 +130,17 @@ namespace HawkProto2
                 var latestPost = _repo.Posts().Take(10).OrderByDescending(p => p.DateModified).First();
                 
                 xw.WriteStartElement(null, "feed", "http://www.w3.org/2005/Atom");
-                xw.WriteElementString(null, "id", "http://www.w3.org/2005/Atom", rootUrl.ToString());
+                xw.WriteElementString(null, "id", "http://www.w3.org/2005/Atom", ROOT_URL.ToString());
                 xw.WriteElementString(null, "title", "http://www.w3.org/2005/Atom", "DevHawk");
                 xw.WriteElementString(null, "updated", "http://www.w3.org/2005/Atom", latestPost.DateModified.ToString("o"));
                 xw.WriteStartElement(null, "link", "http://www.w3.org/2005/Atom");
                 xw.WriteAttributeString("rel", "self");
-                xw.WriteAttributeString("href", new Uri(rootUrl, Url.Action("Atom", "Feed")).ToString());
+                xw.WriteAttributeString("href", new Uri(ROOT_URL, Url.Action("Atom", "Feed")).ToString());
                 xw.WriteEndElement(); // link
                 foreach (var post in _repo.Posts().Take(10))
                 {
-                    var postRelUrl = Url.Action("Post", "Home", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = post.Slug });
-                    var postAbsUrl = new Uri(rootUrl, postRelUrl);
+                    var postRelUrl = Url.Action("Post", "Blog", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = post.Slug });
+                    var postAbsUrl = new Uri(ROOT_URL, postRelUrl);
 
                     xw.WriteStartElement(null, "entry", "http://www.w3.org/2005/Atom");
 
