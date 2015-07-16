@@ -166,7 +166,7 @@ namespace HawkProto2
                 return HttpNotFound();
             }
             
-            return RedirectToActionPermanent("Post", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = slug } );
+            return RedirectToAction("Post", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = slug } );
         }
         
         [Route("category/{name}")]

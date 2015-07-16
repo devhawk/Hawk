@@ -33,11 +33,10 @@ namespace HawkProto2
     			var match = Regex.Match(context.Request.Path.Value ?? string.Empty, @"^/(?:(?<year>\d\d\d\d)/(?<month>\d\d?)/(?<day>\d\d?)/)?(?<slug>[_a-z0-0-]*)$", RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
-                    logger.LogInformation("{Path}{QueryString} looks like a WP era URL. Redirecting to /blog{Path}", context.Request.Path, context.Request.QueryString, context.Request.Path);
-
                     // TODO: Lookup post in repository before redirecting 
 
-                    context.Response.Redirect("/blog" + context.Request.Path, true);
+                    logger.LogInformation("{Path}{QueryString} looks like a WP era URL. Redirecting to /blog{Path}", context.Request.Path, context.Request.QueryString, context.Request.Path);
+                    context.Response.Redirect("/blog" + context.Request.Path);
                 }
                 else
                 {

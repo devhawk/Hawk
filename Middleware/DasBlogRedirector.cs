@@ -222,7 +222,7 @@ namespace HawkProto2
 			else
 			{
 				logger.LogInformation("Redirecting {Path}{QueryString} to {redirectUrl}", context.Request.Path, context.Request.QueryString, redirectUrl);
-				context.Response.Redirect(redirectUrl, true);
+				context.Response.Redirect(redirectUrl);
 			}
 		}
 	}
