@@ -33,7 +33,7 @@ namespace HawkProto2
                 return HttpNotFound();
             }
             
-            var url = Url.Action("Post", "Home", new {
+            var url = Url.Action("Post", "Blog", new {
                     year = post.Date.Year,
                     month = post.Date.Month,
                     day = post.Date.Day,

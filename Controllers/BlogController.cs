@@ -77,11 +77,17 @@ namespace HawkProto2
             return View("Index", pagePosts);
         }   
 
-        //  [Route("")]
         public IActionResult Index()
         {
             Log();
             return IndexPage(1);
+        }
+        
+        [Route("archives")]
+        public IActionResult Archives()
+        {
+            var posts = _repo.Posts().ToArray();
+            return View(posts);
         }
 
         [Route("page/{pageNum}")]
