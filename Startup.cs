@@ -7,6 +7,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Azure = Microsoft.WindowsAzure.Storage;
 
 namespace HawkProto2
 {
@@ -16,7 +17,8 @@ namespace HawkProto2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddInstance<IPostRepository>(HawkFileSystemPostRepository.GetRepository());
+            //  services.AddInstance<IPostRepository>(HawkFileSystemPostRepository.GetRepository());
+            services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(Azure.CloudStorageAccount.DevelopmentStorageAccount));
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

@@ -94,8 +94,8 @@ namespace HawkProto2
                     Author = entry.Post.Author,
                     CommentCount = entry.Post.CommentCount,
 
-                    Content = () => _cache.Memoize(Path.Combine(entry.Directory, ITEM_CONTENT), key => Task.Run(() => File.ReadAllText(key))),
-                    Comments = () => _cache.Memoize(Path.Combine(entry.Directory, COMMENTS_JSON), key => Task.Run(() => JsonConvert
+                    Content = () => _cache.AsyncMemoize(Path.Combine(entry.Directory, ITEM_CONTENT), key => Task.Run(() => File.ReadAllText(key))),
+                    Comments = () => _cache.Memoize(Path.Combine(entry.Directory, COMMENTS_JSON), key => JsonConvert
                         .DeserializeObject<FSComment[]>(File.ReadAllText(key))
                         .Select(fsc => new Comment
                             {
@@ -103,7 +103,7 @@ namespace HawkProto2
                                 Content = fsc.Content,
                                 Date = fsc.Date,
                                 Author = fsc.Author, 
-                            }))),
+                            })),
                 };
 
                 tempPosts.Add(post);
@@ -249,6 +249,5 @@ namespace HawkProto2
                 }
             }
         }
-
     }
 }

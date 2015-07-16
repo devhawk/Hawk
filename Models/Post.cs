@@ -62,7 +62,7 @@ namespace HawkProto2
         public int CommentCount { get; set; }
 
         public Func<Task<string>> Content { get; set; }
-        public Func<Task<IEnumerable<Comment>>> Comments { get; set; }
+        public Func<IEnumerable<Comment>> Comments { get; set; }
     }
 
 }
