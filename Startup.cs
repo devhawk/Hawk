@@ -16,7 +16,7 @@ namespace HawkProto2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddTransient<IPostRepository, HawkFileSystemPostRepository>();
+            services.AddInstance<IPostRepository>(HawkFileSystemPostRepository.GetRepository());
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

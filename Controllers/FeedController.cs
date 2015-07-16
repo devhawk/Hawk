@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Mvc;
 
@@ -75,7 +76,7 @@ namespace HawkProto2
                             xw.WriteElementString("category", tag.Title);
                         }
                         xw.WriteStartElement("content", "encoded", "http://purl.org/rss/1.0/modules/content/");
-                        xw.WriteCData(post.Content());
+                        //  xw.WriteCData(post.Content().wa);
                         xw.WriteEndElement(); // content:encoded
                         xw.WriteEndElement(); // item
                     }

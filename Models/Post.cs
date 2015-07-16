@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HawkProto2
 {
@@ -60,8 +61,8 @@ namespace HawkProto2
 
         public int CommentCount { get; set; }
 
-        public Func<string> Content { get; set; }
-        public Func<IEnumerable<Comment>> Comments { get; set; }
+        public Func<Task<string>> Content { get; set; }
+        public Func<Task<IEnumerable<Comment>>> Comments { get; set; }
     }
 
 }
