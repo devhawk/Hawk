@@ -96,26 +96,27 @@ namespace HawkProto2
 
                     var matches = Match(@"^(\d\d\d\d)-(\d\d?)-(\d\d?)$", query("date"));
                     if (matches != null)
-                        return string.Format("/{0}/{1}/{2}", matches.ToArray());
+                        return string.Format("/blog/{0}/{1}/{2}", matches.ToArray());
 
                     matches = Match(@"^(\d\d\d\d)-(\d\d?)$", query("month"));
                     if (matches != null)
-                        return string.Format("/{0}/{1}", matches.ToArray());
+                        return string.Format("/blog/{0}/{1}", matches.ToArray());
 
                     return "/";
                 };
 				 
 			return defaultaspx
-				.Bind(PathCompare("/archives.aspx", "/archives"))
+				.Bind(PathCompare("/archives.aspx", "/blog/archives"))
 				.Bind(PathCompare("/rss.aspx", "/feed/rss"))
 				.Bind(PathCompare("/atom.aspx", "/feed/atom"))
-				.Bind(PathMatch(@"^/default,date,(\d{4})-(\d\d?)-(\d\d?)\.aspx$", "/{0}/{1}/{2}"))
-				.Bind(PathMatch(@"^/default,month,(\d{4})-(\d\d?)\.aspx$", "/{0}/{1}"))
-				.Bind(PathMatch(@"^/monthview,month,(\d{4})-(\d\d?)\.aspx$", "/{0}/{1}"))
-				.Bind(PathMatch(@"^/monthview,year,(\d{4})\.aspx$", "/{0}"))
-				.Bind(PathMatch(@"^/CategoryView,category,(.*)\.aspx$", "/category/{0}"))
-				.Bind(PathQueryMatch("/monthview.aspx", "month", @"^(\d{4})-(\d\d?)$", "/{0}/{1}"))
-				.Bind(PathQueryMatch("/monthview.aspx", "year", @"^(\d{4})$", "/{0}"))
+				.Bind(PathMatch(@"^/default,date,(\d{4})-(\d\d?)-(\d\d?)\.aspx$", "/blog/{0}/{1}/{2}"))
+				.Bind(PathMatch(@"^/default,month,(\d{4})-(\d\d?)\.aspx$", "/blog/{0}/{1}"))
+				.Bind(PathMatch(@"^/monthview,month,(\d{4})-(\d\d?)\.aspx$", "/blog/{0}/{1}"))
+				.Bind(PathMatch(@"^/monthview,year,(\d{4})\.aspx$", "/blog/{0}"))
+				.Bind(PathQueryMatch("/monthview.aspx", "month", @"^(\d{4})-(\d\d?)$", "/blog/{0}/{1}"))
+				.Bind(PathQueryMatch("/monthview.aspx", "year", @"^(\d{4})$", "/blog/{0}"))
+				.Bind(PathMatch(@"^/CategoryView,category,(.*)\.aspx$", "/blog/category/{0}"))
+				.Bind(PathQueryMatch("/CategoryView.aspx", "category", @"^(.*)$", "/blog/category/{0}"))
 				
 				//  .Bind(PathMatch(@"^/SearchView,q,(.*)\.aspx$", "/search?q={0}"))
 				//  .Bind(PathQueryMatch("/SearchView.aspx", "q", "/search?q={0}"))
@@ -125,7 +126,7 @@ namespace HawkProto2
 				.Bind(PathMatch(@"^/PermaLink,guid,([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})\.aspx$", "/compat/entryId/{0}"))
 				.Bind(PathQueryMatch("/CommentView.aspx", "guid", @"^([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})$", "/compat/entryId/{0}"))
 				.Bind(PathMatch(@"^/CommentView,guid,([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})\.aspx$", "/compat/entryId/{0}"))
-				//  .Bind(PathMatch(@"^/(\d{4})/(\d\d?)/(\d\d?)/(.*)\.aspx$", "/compat/title={3}&year={0}&month={1}&day={2}"))
+				.Bind(PathMatch(@"^/(\d{4})/(\d\d?)/(\d\d?)/(.*)\.aspx$", "/compat/title={3}&year={0}&month={1}&day={2}"))
 				.Bind(PathMatch(@"^/\d{4}/\d\d?/\d\d?/(.*)\.aspx$", "/compat/title/{0}"))
 				.Bind(PathMatch(@"^/(.*)\.aspx$", "/compat/title/{0}"))
 				;			
@@ -136,8 +137,15 @@ namespace HawkProto2
 			// All dasBlog urls end with .aspx. Bail out immediately for URLs that don't end in .aspx
 			if (req.Path.HasValue && req.Path.Value.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
 			{
+				logger.LogInformation("Checking {Path}{QueryString}", req.Path, req.QueryString);
+                var redirectUrl = GetRedirector(logger)(req.Path.Value, req.Query.Get);
 				
-                return GetRedirector(logger)(req.Path.Value, req.Query.Get);
+				if (redirectUrl == null)
+				{
+					logger.LogError("Could not match {Path}{QueryString}", req.Path, req.QueryString);
+				}
+				
+				return redirectUrl;
 			}
 
 			return null;			
@@ -148,8 +156,6 @@ namespace HawkProto2
 			var loggerFactory = context.ApplicationServices.GetRequiredService<ILoggerFactory>();
 			var logger = loggerFactory.CreateLogger("DevHawkRedirector");
 						
-			//  logger.LogError(context.Request.Path.Value);
-
 			var redirectUrl = GetRedirectUrl(context.Request, logger);
 			
 			if (string.IsNullOrEmpty(redirectUrl))
