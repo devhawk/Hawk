@@ -5,6 +5,10 @@
     var prevNextPageLinks = ViewBag.PrevNextPageLinks as Tuple<string, string>;
 }
 
+@if (ViewBag.PageHeader != null)
+{
+<h1>@ViewBag.PageHeader</h1>
+}
 @foreach (var post in Model)
 {
     @Html.Partial("_Post", post);

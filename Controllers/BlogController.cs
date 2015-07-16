@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Framework.Logging;
@@ -69,12 +70,15 @@ namespace HawkProto2
             var actionPage = action + "Page";
             var skip = (pageNum - 1) * PAGE_SIZE;
             var pagePosts = posts.Skip(skip).Take(PAGE_SIZE).ToArray();
-            
+
+            // generate previous / next page link URLs
+            // If we're already on the first/last page, then don't generate prev/next page URLs
+            // If we're on page 2, generate the prev page link to the root action instead of action/page/1             
             ViewBag.PrevNextPageLinks = Tuple.Create(
-                pageNum == 1 ? string.Empty : pageNum == 2 ? Url.Action(action, routeValues) : Url.Action(actionPage, GetRouteValues(pageNum - 1, routeValues)),
+                pageNum == 1 ? string.Empty : (pageNum == 2 ? Url.Action(action, routeValues) : Url.Action(actionPage, GetRouteValues(pageNum - 1, routeValues))),
                 pageNum == pageCount ? string.Empty : Url.Action(actionPage, GetRouteValues(pageNum + 1, routeValues)));
             
-            return View("Index", pagePosts);
+            return View("MultiplePosts", pagePosts);
         }   
 
         public IActionResult Index()
@@ -100,7 +104,6 @@ namespace HawkProto2
         [Route("{year:int}")]
         public IActionResult PostsByYear(int year)
         {
-            Log();
             return PostsByYearPage(year, 1);
         }
         
@@ -108,13 +111,14 @@ namespace HawkProto2
         public IActionResult PostsByYearPage(int year, int pageNum)
         {
             Log();
+            
+            ViewBag.PageHeader = $"Posts from {year}"; 
             return PostsHelper(_repo.Posts().Where(p => p.Date.Year == year), pageNum, "PostsByYear", new { year = year });
         }
 
         [Route("{year:int}/{month:range(1,12)}")]
         public IActionResult PostsByMonth(int year, int month)
         {
-            Log();
             return PostsByMonthPage(year, month, 1);
         }
 
@@ -122,6 +126,10 @@ namespace HawkProto2
         public IActionResult PostsByMonthPage(int year, int month, int pageNum)
         {
             Log();
+
+            var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+            ViewBag.PageHeader = $"Posts from {monthName} {year}"; 
+
             return PostsHelper(
                 _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month), 
                 pageNum, "PostsByMonth", new { year = year, month = month });
@@ -130,7 +138,6 @@ namespace HawkProto2
         [Route("{year:int}/{month:range(1,12)}/{day:range(1,31)}")]
         public IActionResult PostsByDay(int year, int month, int day)
         {
-            Log();
             return PostsByDayPage(year, month, day, 1);
         }
 
@@ -138,6 +145,10 @@ namespace HawkProto2
         public IActionResult PostsByDayPage(int year, int month, int day, int pageNum)
         {
             Log();
+            
+            var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+            ViewBag.PageHeader = $"Posts from {monthName} {day}, {year}"; 
+
             return PostsHelper(
                 _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day), 
                 pageNum, "PostsByMonth", new { year = year, month = month, day = day });
@@ -172,7 +183,6 @@ namespace HawkProto2
         [Route("category/{name}")]
         public IActionResult Category(string name)
         {
-            Log();
             return CategoryPage(name, 1);
         }
 
@@ -180,6 +190,13 @@ namespace HawkProto2
         public IActionResult CategoryPage(string name, int pageNum)
         {
             Log();
+            
+            var title = _repo.Categories()
+                .Where(s => s.Item1.Slug == name)
+                .Select(s => s.Item1.Title)
+                .Single();
+            ViewBag.PageHeader = $"{title} Posts";
+             
             return PostsHelper(
                 _repo.Posts().Where(p => p.Categories.Any(c => c.Slug == name)), 
                 pageNum, "Category", new { name = name });
@@ -188,7 +205,6 @@ namespace HawkProto2
         [Route("tag/{name}")]
         public IActionResult Tag(string name)
         {
-            Log();
             return TagPage(name, 1);
         }
 
@@ -196,6 +212,13 @@ namespace HawkProto2
         public IActionResult TagPage(string name, int pageNum)
         {
             Log();
+            
+            var title = _repo.Tags()
+                .Where(s => s.Item1.Slug == name)
+                .Select(s => s.Item1.Title)
+                .Single();
+            ViewBag.PageHeader = $"{title} Posts";
+             
             return PostsHelper(
                 _repo.Posts().Where(p => p.Tags.Any(c => c.Slug == name)), 
                 pageNum, "Tag", new { name = name });
@@ -204,7 +227,6 @@ namespace HawkProto2
         [Route("author/{name}")]
         public IActionResult Author(string name)
         {
-            Log();
             return AuthorPage(name, 1);    
         }
         
@@ -212,6 +234,8 @@ namespace HawkProto2
         public IActionResult AuthorPage(string name, int pageNum)
         {
             Log();
+            
+            ViewBag.PageHeader = $"Posts by {name}"; 
             return PostsHelper(
                 _repo.Posts().Where(p => p.Author.Slug == name), 
                 pageNum, "Author", new { name = name });

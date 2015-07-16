@@ -1,4 +1,5 @@
 @model IEnumerable<Post>
+@using System.Globalization
 
 @{
     ViewBag.Title = " Archive";
@@ -8,7 +9,7 @@
 {
     string MonthName(int monthNumber)
     {
-        return System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthNumber);
+        return CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthNumber);
     }
 
     string CommentCount(int count) 
