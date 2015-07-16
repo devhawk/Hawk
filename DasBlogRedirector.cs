@@ -29,35 +29,55 @@ namespace HawkProto2
 	    {
 	        _next = next;
 	    }
-		
+
+		// Helper function to do OrdinalIgnoreCase comparison of two strings 		
 		public static bool CompareIgnoreCase(string s1, string s2)
         {
             return string.Compare(s1, s2, StringComparison.OrdinalIgnoreCase) == 0;
         }
-
+		
+		// Helper function to do a RegEx match, returning an IEnumerable of strings on success or null on failure
         public static IEnumerable<string> Match(string pattern, string input)
         {
 			var match = Regex.Match(input ?? string.Empty, pattern, RegexOptions.IgnoreCase);
             return match.Success ?  match.Groups.Cast<Group>().Skip(1).Select(g => g.Value) : null;
         }
 
-		public static string Match(string pattern, string input, string output)
+		// Helper function to do a RegEx match and apply a function to generate the output
+		public static string Match(string pattern, string input, Func<IEnumerable<string>, string> outputFunc)
 		{
 			var matches = Match(pattern, input);
-			return matches != null ? string.Format(output, matches.ToArray()) : null; 
+			return matches == null ? null : outputFunc(matches);
 		}
+		
+		//  // helper function to do a regex match and string.format the output
+		//  public static string Match(string pattern, string input, string output)
+		//  {
+		//  	return Match(pattern, input, matches => string.Format(output, matches.ToArray()));
+		//  }
 
+		// Redirector generator that returns the output parameter when the request path matches the expectedPath paremeter
 		static Redirector PathCompare(string expectedPath, string output)
         {
             return (path, query) => CompareIgnoreCase(path, expectedPath) ? output : null;
         } 
 		
-		static Redirector PathMatch(string pattern, string output)
+		// Redirector generator that matches the request path against a regex and applies the outputFunc to the match collection 
+		static Redirector PathMatch(string pattern, Func<IEnumerable<string>, string> outputFunc)
         {
-            return (path, query) => Match(pattern, path, output);
+            return (path, query) => Match(pattern, path, outputFunc);
         }
 
-        static Redirector PathQueryMatch(string expectedPath, string name, string pattern, string output)
+		// PathMatch helper that uses string.Format as the outputFunc
+		static Redirector PathMatch(string pattern, string output)
+        {
+            return PathMatch(pattern, matches => string.Format(output, matches.ToArray()));
+        }
+
+		// Redirector generator that matches the request path against the expectedPath parameter 
+		// and a named query string value against a regex and applies the outputFunc to the query 
+		// string regex match collection
+        static Redirector PathQueryMatch(string expectedPath, string name, string pattern, Func<IEnumerable<string>, string> outputFunc)
         {
             return (path, query) =>
             {
@@ -68,27 +88,63 @@ namespace HawkProto2
                 if (matches == null)
                     return null;
 
-                return string.Format(output, matches.ToArray());
+                return outputFunc(matches);
             };
         }
 
-        static Redirector PathQueryMatch(string expectedPath, string name, string output)
+		// PathQueryMatch helper that uses string.Format as the outputFunc
+        static Redirector PathQueryMatch(string expectedPath, string name, string pattern, string output)
         {
-            return (path, query) =>
-            {
-                if (string.Compare(path, expectedPath, StringComparison.OrdinalIgnoreCase) != 0)
-                    return null;
-
-                var value = query(name);
-                if (value == null)
-                    return null;
-
-                return string.Format(output, value);
-            };
+			return PathQueryMatch(expectedPath, name, pattern, matches => string.Format(output, matches.ToArray()));
         }
-		
-		static Redirector GetRedirector(ILogger logger)
+
+		static string FormatPostUrl(Post post)
 		{
+			return post == null ? null : $"/blog/{post.Date.ToString("yyyy/MM/dd")}/{post.Slug}";
+		}
+		
+		static string GetPostUrlByEntryId(IPostRepository repo, IEnumerable<string> matches)
+		{
+			var match = matches.Single();
+			var entryId = Guid.Parse(match);
+			var post = repo.PostByDasBlogEntryId(entryId);
+			
+			return FormatPostUrl(post);
+		}
+
+		static string GetPostUrlByTitle(IPostRepository repo, IEnumerable<string> matches)
+		{
+			Post post;
+			switch (matches.Count())
+			{
+				case 1:
+				{
+					var slug = matches.Single();
+					post = repo.PostByDasBlogTitle(slug);
+					break;
+				}
+				case 4:
+				{
+					var intArray = matches.Take(3).Select(t => int.Parse(t)).ToArray();
+					var date = new DateTimeOffset(intArray[0], intArray[1], intArray[2], 0, 0, 0, TimeSpan.Zero);
+					var slug = matches.ElementAt(3);
+					post = repo.PostByDasBlogTitle(slug, date.Date);
+					break;
+				}
+				default:
+					throw new ArgumentException("matches had the wrong number of elements");					
+			}
+
+			return FormatPostUrl(post);
+		}
+
+		static Redirector GetRedirector(ILogger logger, IPostRepository repo)
+		{
+			if (repo == null)
+			{
+				throw new ArgumentNullException("repo");
+			}
+
             Redirector defaultaspx = (path, query) => 
                 {
                     if (!CompareIgnoreCase("/default.aspx", path))
@@ -104,7 +160,7 @@ namespace HawkProto2
 
                     return "/";
                 };
-				 
+
 			return defaultaspx
 				.Bind(PathCompare("/archives.aspx", "/blog/archives"))
 				.Bind(PathCompare("/rss.aspx", "/feed/rss"))
@@ -122,13 +178,12 @@ namespace HawkProto2
 				//  .Bind(PathQueryMatch("/SearchView.aspx", "q", "/search?q={0}"))
 				//  .Bind(PathQueryMatch("/SearchView.aspx", "category", "/category/{0}"))
 				
-				.Bind(PathQueryMatch("/PermaLink.aspx", "guid", @"^([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})$", "/compat/entryId/{0}"))
-				.Bind(PathMatch(@"^/PermaLink,guid,([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})\.aspx$", "/compat/entryId/{0}"))
-				.Bind(PathQueryMatch("/CommentView.aspx", "guid", @"^([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})$", "/compat/entryId/{0}"))
-				.Bind(PathMatch(@"^/CommentView,guid,([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})\.aspx$", "/compat/entryId/{0}"))
-				.Bind(PathMatch(@"^/(\d{4})/(\d\d?)/(\d\d?)/(.*)\.aspx$", "/compat/title={3}&year={0}&month={1}&day={2}"))
-				.Bind(PathMatch(@"^/\d{4}/\d\d?/\d\d?/(.*)\.aspx$", "/compat/title/{0}"))
-				.Bind(PathMatch(@"^/(.*)\.aspx$", "/compat/title/{0}"))
+				.Bind(PathQueryMatch("/PermaLink.aspx", "guid", @"^([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})$", m => GetPostUrlByEntryId(repo, m)))
+				.Bind(PathMatch(@"^/PermaLink,guid,([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})\.aspx$", m => GetPostUrlByEntryId(repo, m)))
+				.Bind(PathQueryMatch("/CommentView.aspx", "guid", @"^([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})$", m => GetPostUrlByEntryId(repo, m)))
+				.Bind(PathMatch(@"^/CommentView,guid,([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})\.aspx$", m => GetPostUrlByEntryId(repo, m)))
+				.Bind(PathMatch(@"^/(.*)\.aspx$", m => GetPostUrlByTitle(repo, m)))
+				.Bind(PathMatch(@"^/(\d{4})/(\d\d?)/(\d\d?)/(.*)\.aspx$", m => GetPostUrlByTitle(repo, m)))
 				;			
 		}
 						
@@ -137,8 +192,10 @@ namespace HawkProto2
 			// All dasBlog urls end with .aspx. Bail out immediately for URLs that don't end in .aspx
 			if (req.Path.HasValue && req.Path.Value.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
 			{
+				var repo = req.HttpContext.ApplicationServices.GetRequiredService<IPostRepository>();
+
 				logger.LogInformation("Checking {Path}{QueryString}", req.Path, req.QueryString);
-                var redirectUrl = GetRedirector(logger)(req.Path.Value, req.Query.Get);
+                var redirectUrl = GetRedirector(logger, repo)(req.Path.Value, req.Query.Get);
 				
 				if (redirectUrl == null)
 				{
@@ -155,7 +212,7 @@ namespace HawkProto2
 	    {
 			var loggerFactory = context.ApplicationServices.GetRequiredService<ILoggerFactory>();
 			var logger = loggerFactory.CreateLogger("DevHawkRedirector");
-						
+
 			var redirectUrl = GetRedirectUrl(context.Request, logger);
 			
 			if (string.IsNullOrEmpty(redirectUrl))
