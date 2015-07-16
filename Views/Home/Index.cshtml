@@ -1,1 +1,35 @@
+@using Microsoft.AspNet.Mvc.Rendering
+@using System.Text;
+
+@functions
+{
+    HtmlString TestLink(string url)
+    {
+        var tw = new StringCollectionTextWriter(Encoding.UTF8);
+        tw.WriteLine($"<li><a href=\"{url}\">{url}</a></li>");
+        return new HtmlString(tw);
+    }
+}
+
+
 <h1>Temporary home page stand in</h1>
+
+<ul>
+	@TestLink("default.aspx")
+    @TestLink("archives.aspx")
+    @TestLink("rss.aspx")
+    @TestLink("atom.aspx")
+    @TestLink("monthview.aspx?year=2009")
+    @TestLink("default,month,2011-02.aspx")
+    @TestLink("monthview.aspx?month=2011-03")
+    @TestLink("default,date,2003-01-14.aspx")
+    @TestLink("default.aspx?date=2004-07-27")
+    @TestLink("CategoryView,category,sports.aspx ")
+    @TestLink("CategoryView.aspx?category=sports")
+    @TestLink("2005/10/5/code+is+model.aspx")
+    @TestLink("code+is+model.aspx")
+    @TestLink("CommentView,guid,f5bd9a40-08ae-4411-9a2a-f7bec0a0c348.aspx")
+    @TestLink("CommentView.aspx?guid=283ef85e-e61c-46f0-b0a2-87ec14c8bc06")
+    @TestLink("PermaLink.aspx?guid=010e1394-9b1f-4baf-b87c-b9ac7c0cff06")
+    @TestLink("PermaLink,guid,010e1394-9b1f-4baf-b87c-b9ac7c0cff06.aspx")
+</ul>
