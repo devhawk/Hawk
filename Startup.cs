@@ -1,18 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Azure = Microsoft.WindowsAzure.Storage;
 
 namespace HawkProto2
 {
-    // TODO: Redirect /yyyy/MM/dd/slug and /slug entries to /blog/yyyy/MM/dd/slug
     public class Startup
     {
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
