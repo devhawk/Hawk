@@ -140,7 +140,7 @@ namespace HawkProto2
         [Route("{year:int}/{month:range(1,12)}/{day:range(1,31)}/{slug}")]
         public IActionResult Post(int year, int month, int day, string slug)
         {
-            Log("Post (date + slug)");
+            Log();
             var post = _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day && p.Slug == slug).FirstOrDefault();
             if (post == null)
             {
@@ -151,16 +151,16 @@ namespace HawkProto2
         }
 
         [Route("{slug}")]
-        public IActionResult Post(string slug)
+        public IActionResult SlugPost(string slug)
         {
-            Log("Post (slug only)");
+            Log();
             var post = _repo.Posts().Where(p => p.Slug == slug).FirstOrDefault();
             if (post == null)
             {
                 return HttpNotFound();
             }
             
-            return View("Post", post);
+            return RedirectToActionPermanent("Post", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = slug } );
         }
         
         [Route("category/{name}")]

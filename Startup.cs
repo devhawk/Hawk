@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Microsoft.AspNet.Builder;
@@ -34,7 +35,17 @@ namespace HawkProto2
                 
                 if (context.Response.StatusCode == 404)
                 {
-                    logger.LogInformation("{Path}{QueryString} Not Found", context.Request.Path, context.Request.QueryString);
+                    // if the request path looks like /yyyy/mm/dd/slug or /slug, redirect to the blog controller
+        			var match = Regex.Match(context.Request.Path.Value ?? string.Empty, @"^/(\d\d\d\d/\d\d?/\d\d?/)?[_a-z0-0/-]*$", RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        logger.LogInformation("{Path}{QueryString} looks like a WP era URL. Redirecting to /blog{Path}", context.Request.Path, context.Request.QueryString, context.Request.Path);
+                        context.Response.Redirect("/blog" + context.Request.Path, true);
+                    }
+                    else
+                    {
+                        logger.LogWarning("{Path}{QueryString} Not Found", context.Request.Path, context.Request.QueryString);
+                    }
                 }
             });
             
