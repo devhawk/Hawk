@@ -164,7 +164,6 @@ namespace HawkProto2
                     Author = ConvertAuthor(entity.Properties["Author"].StringValue),
                     CommentCount = entity.Properties["CommentCount"].Int32Value.Value,
                     Content = () => _cache.AsyncMemoize(entity.PartitionKey, key => GetContent(contentContainer, key)), 
-                    //  Comments = () => _cache.Memoize(entity.PartitionKey + "-Comments", key => GetComments(commentsTable, key)),
                     Comments = () => GetComments(commentsTable, entity.PartitionKey),
                 };
 
