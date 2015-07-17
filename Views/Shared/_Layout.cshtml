@@ -63,7 +63,6 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a asp-action="About" asp-controller="Home">About</a></li>
                     <li><a asp-action="Index" asp-controller="Blog">Blog</a></li>
                     <li><a asp-action="Archives" asp-controller="Blog">Archives</a></li>
                     <li><a asp-action="Index" asp-controller="Feed">RSS</a></li>
@@ -84,11 +83,11 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <ul class="list-inline text-center">
-                        @SocialLink("skype:harrypierson", "social-skype")
                         @SocialLink("mailto:harry@devhawk.net", "mail")
+                        @SocialLink("skype:harrypierson", "social-skype")
+                        @SocialLink("http://twitter.com/devhawk", "social-twitter")
                         @SocialLink("https://github.com/devhawk/", "social-github")
                         @SocialLink("http://stackoverflow.com/users/1179731/devhawk", "social-stack-overflow")
-                        @SocialLink("http://twitter.com/devhawk", "social-twitter")
                         @SocialLink("http://facebook.com/devhawk", "social-facebook")
                         @SocialLink("https://www.linkedin.com/in/harrypierson", "social-linkedin")
                         @SocialLink("http://live.xbox.com/member/RayTracer", "social-xbox") 

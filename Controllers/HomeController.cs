@@ -31,13 +31,8 @@ namespace HawkProto2
         [Route("")]
         public IActionResult Index()
         {
-            return View();
-        }
-        
-        [Route("about")]
-        public IActionResult About()
-        {
-            return View();
+            var posts = _repo.Posts().Take(5).ToArray();
+            return View(posts);
         }
     }
 }
