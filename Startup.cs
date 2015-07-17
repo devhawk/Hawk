@@ -1,6 +1,5 @@
-using System.Text.RegularExpressions;
-
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Diagnostics;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Azure = Microsoft.WindowsAzure.Storage;
@@ -24,7 +23,10 @@ namespace HawkProto2
             
             app.UseMiddleware<DasBlogRedirector>();
             app.UseMiddleware<NotFoundMiddleware>();
+            app.UseErrorPage(ErrorPageOptions.ShowAll);
+            app.UseStaticFiles();
             app.UseMvcWithDefaultRoute();
+            
         }
     }
 }
