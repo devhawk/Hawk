@@ -1,0 +1,15 @@
+{
+  "name": "HawkProto2",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "~3.3.5"
+  },
+  "preen": {
+    "jquery": [
+      "dist/*"
+    ],
+    "bootstrap": [
+      "dist/*/*"
+    ]
+  }
+}

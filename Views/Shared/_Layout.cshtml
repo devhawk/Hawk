@@ -24,9 +24,11 @@
 
     <title>DevHawk @ViewBag.Title</title>
 
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
-    <link href="http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet">
-    <link href="http://rawgit.com/isagalaev/highlight.js/master/src/styles/default.css" rel="stylesheet">
+    <link href="~/bower/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+    
+    @* TODO: figure out how to bring in foundation-icons and highlight.js styles via bower *@
+    <link href="~/css/foundation-icons.css" rel="stylesheet">
+    <link href="~/css/vs.css" rel="stylesheet">
 
     <style>
         pre code {
@@ -98,7 +100,7 @@
         </div>
     </footer>
 
-    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="~/bower/jquery/dist/jquery.js"></script>
+    <script src="~/bower/bootstrap/dist/js/bootstrap.js"></script>
 </body>
 </html>

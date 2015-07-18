@@ -39,5 +39,14 @@
     "wwwroot",
     "node_modules",
     "bower_components"
-  ]
+  ],
+  "scripts": {
+    "postrestore": [
+      "npm install",
+      ".\\node_modules\\.bin\\bower.cmd install"
+    ],
+    "prepublish": [
+      ".\\node_modules\\.bin\\gulp.cmd preen"
+    ]
+  }
 }

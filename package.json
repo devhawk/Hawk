@@ -1,0 +1,9 @@
+{
+  "name": "HawkProto2",
+  "version": "0.0.0",
+  "devDependencies": {
+    "bower": "^1.4.1",
+    "gulp": "^3.9.0",
+    "preen": "^1.2.0"
+  }
+}
