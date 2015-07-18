@@ -2,14 +2,12 @@
   "name": "HawkProto2",
   "private": true,
   "dependencies": {
-    "bootstrap": "~3.3.5"
+    "bootstrap": "~3.3.5",
+    "highlight.js": "https://github.com/isagalaev/highlight.js.git#8.6"
   },
   "preen": {
-    "jquery": [
-      "dist/*"
-    ],
-    "bootstrap": [
-      "dist/*/*"
-    ]
+    "bootstrap": [ "dist/*/*" ],
+    "jquery": ["dist/*"],
+    "highlight.js": ["src/styles/*.css"] 
   }
 }
