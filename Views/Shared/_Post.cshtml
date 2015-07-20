@@ -38,7 +38,7 @@
     </div>
     <div class="blog-post-footer">
         This entry was posted
-        by <a asp-action="Author" asp-controller="Blog" asp-route-name="@Model.Author.Slug">@Model.Author.Name</a>
+        by <a asp-action="Author" asp-controller="Blog" asp-route-slug="@Model.Author.Slug">@Model.Author.Name</a>
         on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM dd, yyyy")</a> 
         @CommaSeperatedList("in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })))
         @CommaSeperatedList("and tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug })))

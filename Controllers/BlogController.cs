@@ -224,21 +224,26 @@ namespace HawkProto2
                 pageNum, "Tag", new { name = name });
         }
         
-        [Route("author/{name}")]
-        public IActionResult Author(string name)
+        [Route("author/{slug}")]
+        public IActionResult Author(string slug)
         {
-            return AuthorPage(name, 1);    
+            return AuthorPage(slug, 1);    
         }
         
-        [Route("author/{name}/page/{pageNum}")]
-        public IActionResult AuthorPage(string name, int pageNum)
+        [Route("author/{slug}/page/{pageNum}")]
+        public IActionResult AuthorPage(string slug, int pageNum)
         {
             Log();
             
+            var name = _repo.Posts()
+                .Where(p => p.Author.Slug == slug)
+                .Select(p => p.Author.Name)
+                .First();
+
             ViewBag.PageHeader = $"Posts by {name}"; 
             return PostsHelper(
-                _repo.Posts().Where(p => p.Author.Slug == name), 
-                pageNum, "Author", new { name = name });
+                _repo.Posts().Where(p => p.Author.Slug == slug), 
+                pageNum, "Author", new { slug = slug });
         }
 	}
 }
