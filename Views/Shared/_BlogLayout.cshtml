@@ -6,22 +6,22 @@
     @RenderBody()
 </div>
 <div class="col-md-3 sidebar" style="margin-left:10px">
-    <div class="sidebar-item">
+    <div class="sidebar-item sidebar-sponsors">
         <h3 class="sidebar-item-title">Sponsors</h3>
         <img src="http://lorempixel.com/240/400/technics/" />
     </div>
     
-    <div class="sidebar-item">
+    <div class="sidebar-item sidebar-categories">
         <h3  class="sidebar-title">Categories</h3>
         @Component.Invoke("CategoryList")
     </div>
 
-    <div class="sidebar-item">
+    <div class="sidebar-item sidebar-tagcloud">
         <h3 class="sidebar-title">Tags</h3>
         @Component.Invoke("TagCloud")
     </div>
      
-    <div class="sidebar-item">
+    <div class="sidebar-item sidebar-disclaimer">
         <h3 class="sidebar-title">Disclaimer</h3>
         <div>
             The information in this weblog is provided "AS IS" with no warranties, 
