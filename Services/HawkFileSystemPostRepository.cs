@@ -10,7 +10,7 @@ namespace HawkProto2
 {    
     class HawkFileSystemPostRepository : IPostRepository
     {
-        const string PATH = @"E:\dev\DevHawk\HawkContent";
+        const string PATH = @"D:\dev\DevHawk\HawkContent";
         const string ITEM_JSON = "hawk-post.json";
         const string COMMENTS_JSON = "hawk-comments.json";
         const string DASBLOG_COMPAT_JSON = "hawk-dasblog-compat.json";
