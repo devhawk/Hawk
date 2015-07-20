@@ -30,7 +30,7 @@ namespace HawkProto2
             if (context.Response.StatusCode == 404)
             {
                 // if the request path looks like /yyyy/mm/dd/slug or /slug, redirect to the blog controller
-    			var match = Regex.Match(context.Request.Path.Value ?? string.Empty, @"^/(?:(?<year>\d\d\d\d)/(?<month>\d\d?)/(?<day>\d\d?)/)?(?<slug>[_a-z0-0-]*)$", RegexOptions.IgnoreCase);
+    			var match = Regex.Match(context.Request.Path.Value ?? string.Empty, @"^/(?:(?<year>\d\d\d\d)/(?<month>\d\d?)/(?<day>\d\d?)/)?(?<slug>[_a-z0-0-]*)/?$", RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     // TODO: Lookup post in repository before redirecting 
