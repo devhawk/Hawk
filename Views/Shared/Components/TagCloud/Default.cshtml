@@ -11,7 +11,7 @@
 }
 
 <div>
-    @foreach (var tag in Model.Where(t => t.Item2 >= min).OrderBy(t => t.Item1.Title))
+    @foreach (var tag in Model.Where(t => t.Item2 >= min))
     {
         var size = minPercent + ((max - (max - (tag.Item2 - min))) * multiplier);  
         <a asp-action="Tag" asp-controller="Blog" asp-route-name="@tag.Item1.Slug" style="font-size:@(size)%">@tag.Item1.Title (@tag.Item2)</a>

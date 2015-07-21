@@ -20,7 +20,7 @@ namespace HawkProto2
 
         public IViewComponentResult Invoke()
         {
-            var cats = _repo.Categories().ToArray();
+            var cats = _repo.Categories().OrderBy(t => t.Item1.Title).ToArray();
             return View(cats);
         }
     }
