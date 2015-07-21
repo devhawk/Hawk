@@ -98,6 +98,7 @@ namespace HawkProto2
         public IActionResult IndexPage(int pageNum)
         {
             Log();
+            ViewBag.Title = "Blog";
             return PostsHelper(_repo.Posts(), pageNum, "Index");
         }
 
@@ -112,6 +113,7 @@ namespace HawkProto2
         {
             Log();
             
+            ViewBag.Title = $"Blog ({year})";
             ViewBag.PageHeader = $"Posts from {year}"; 
             return PostsHelper(_repo.Posts().Where(p => p.Date.Year == year), pageNum, "PostsByYear", new { year = year });
         }
@@ -128,6 +130,7 @@ namespace HawkProto2
             Log();
 
             var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+            ViewBag.Title = $"Blog ({year}-{month})";
             ViewBag.PageHeader = $"Posts from {monthName} {year}"; 
 
             return PostsHelper(
@@ -147,6 +150,7 @@ namespace HawkProto2
             Log();
             
             var monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+            ViewBag.Title = $"Blog ({year}-{month}-{day})";
             ViewBag.PageHeader = $"Posts from {monthName} {day}, {year}"; 
 
             return PostsHelper(
@@ -195,6 +199,8 @@ namespace HawkProto2
                 .Where(s => s.Item1.Slug == name)
                 .Select(s => s.Item1.Title)
                 .Single();
+
+            ViewBag.Title = $"Blog ({title})";
             ViewBag.PageHeader = $"{title} Posts";
              
             return PostsHelper(
@@ -217,6 +223,7 @@ namespace HawkProto2
                 .Where(s => s.Item1.Slug == name)
                 .Select(s => s.Item1.Title)
                 .Single();
+            ViewBag.Title = $"Blog ({title})";
             ViewBag.PageHeader = $"{title} Posts";
              
             return PostsHelper(
@@ -239,8 +246,9 @@ namespace HawkProto2
                 .Where(p => p.Author.Slug == slug)
                 .Select(p => p.Author.Name)
                 .First();
-
+            ViewBag.Title = $"Blog ({name})";
             ViewBag.PageHeader = $"Posts by {name}"; 
+
             return PostsHelper(
                 _repo.Posts().Where(p => p.Author.Slug == slug), 
                 pageNum, "Author", new { slug = slug });
