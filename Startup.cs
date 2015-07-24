@@ -1,6 +1,7 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.StaticFiles;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
@@ -48,7 +49,7 @@ namespace HawkProto2
 
             app.UseMiddleware<DasBlogRedirector>();
             app.UseMiddleware<NotFoundMiddleware>();
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions() { ServeUnknownFileTypes = env.IsDevelopment() });
             app.UseMvcWithDefaultRoute();
         }
     }

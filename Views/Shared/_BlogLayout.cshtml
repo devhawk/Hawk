@@ -2,32 +2,36 @@
     Layout = "_Layout";
 }
 
-<div class="col-md-8">
-    @RenderBody()
-</div>
-<div class="col-md-3 sidebar" style="margin-left:10px">
-    <div class="sidebar-item sidebar-sponsors">
-        <h3 class="sidebar-item-title">Sponsors</h3>
-        <img src="http://lorempixel.com/240/400/technics/" />
-    </div>
-    
-    <div class="sidebar-item sidebar-categories">
-        <h3  class="sidebar-title">Categories</h3>
-        @Component.Invoke("CategoryList")
-    </div>
-
-    <div class="sidebar-item sidebar-tagcloud">
-        <h3 class="sidebar-title">Tags</h3>
-        @Component.Invoke("TagCloud")
-    </div>
-     
-    <div class="sidebar-item sidebar-disclaimer">
-        <h3 class="sidebar-title">Disclaimer</h3>
-        <div>
-            The information in this weblog is provided "AS IS" with no warranties, 
-            and confers no rights. This weblog does not represent the thoughts, 
-            intentions, plans or strategies of my employer. It is solely my opinion. 
-            Inappropriate comments will be deleted at the authors discretion.
+<div class="container" role="main">
+    <div class="row">
+        <div class="col-md-8">
+            @RenderBody()
+        </div>
+        <div class="col-md-3 sidebar" style="margin-left:10px">
+            <div class="sidebar-item sidebar-sponsors">
+                <h3 class="sidebar-item-title">Sponsors</h3>
+                <img src="http://lorempixel.com/240/400/technics/" />
+            </div>
+            
+            <div class="sidebar-item sidebar-categories">
+                <h3  class="sidebar-title">Categories</h3>
+                @Component.Invoke("CategoryList")
+            </div>
+        
+            <div class="sidebar-item sidebar-tagcloud">
+                <h3 class="sidebar-title">Tags</h3>
+                @Component.Invoke("TagCloud")
+            </div>
+             
+            <div class="sidebar-item sidebar-disclaimer">
+                <h3 class="sidebar-title">Disclaimer</h3>
+                <div>
+                    The information in this weblog is provided "AS IS" with no warranties, 
+                    and confers no rights. This weblog does not represent the thoughts, 
+                    intentions, plans or strategies of my employer. It is solely my opinion. 
+                    Inappropriate comments will be deleted at the authors discretion.
+                </div>
+            </div>
         </div>
     </div>
 </div>

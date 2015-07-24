@@ -1,91 +1,71 @@
 @model IEnumerable<Post>
 
-@using Microsoft.AspNet.Mvc.Rendering
-@using System.Text
+<header id="homePageHeader">
+    <div>
+        <h1>DevHawk</h1>
+        <h2>Passion, Technology &</h2>
+        <h2>Ruthless Competence</h2>
+    </div>
+</header>
 
-@*functions
-{
-    HtmlString TestLink(string url)
-    {
-        var tw = new StringCollectionTextWriter(Encoding.UTF8);
-        tw.WriteLine($"<li><a href=\"{url}\">{url}</a></li>");
-        return new HtmlString(tw);
-    }
-}
-
-<ul>
-	@TestLink("default.aspx")
-    @TestLink("archives.aspx")
-    @TestLink("rss.aspx")
-    @TestLink("atom.aspx")
-    @TestLink("monthview.aspx?year=2009")
-    @TestLink("default,month,2011-02.aspx")
-    @TestLink("monthview.aspx?month=2011-02")
-    @TestLink("default,date,2003-01-31.aspx")
-    @TestLink("default.aspx?date=2003-01-31")
-    @TestLink("CategoryView,category,sports.aspx ")
-    @TestLink("CategoryView.aspx?category=sports")
-    @TestLink("2005/10/5/code+is+model.aspx")
-    @TestLink("code+is+model.aspx")
-    @TestLink("CommentView,guid,f5bd9a40-08ae-4411-9a2a-f7bec0a0c348.aspx")
-    @TestLink("CommentView.aspx?guid=283ef85e-e61c-46f0-b0a2-87ec14c8bc06")
-    @TestLink("PermaLink.aspx?guid=010e1394-9b1f-4baf-b87c-b9ac7c0cff06")
-    @TestLink("PermaLink,guid,010e1394-9b1f-4baf-b87c-b9ac7c0cff06.aspx")
-</ul>
-*@
-<div class="jumbotron">
-    <h1>DevHawk</h1>
-    <h2>Passion * Technology * Ruthless Competence</h2>
-</div>
-
-<section class="about-me">
-    <p>
-        My real name is Harry Pierson, but I've gone by "DevHawk" online since I 
-        <a asp-action="Post" asp-controller="Blog" asp-route-year="2003" asp-route-month="1" asp-route-day="15" asp-route-slug="new-and-improved-devhawk">started this blog way back in 2003</a>.
-        Originally, this blog ran on an engine of my own design, then <a href="https://github.com/shanselman/dasblog">DasBlog</a>, then <a href="https://wordpress.org/">WordPress</a>. 
-        However, I missed having my own sandbox on the web, so I built a new engine called Hawk (natch) to power the blog. 
-        It's written in C#, uses <a href="https://github.com/aspnet/home">ASP.NET 5</a> and runs on <a href="http://azure.microsoft.com/">Azure</a>. 
-        Source code coming soon!
-    </p>  
-    <p> 
-        I'm known best for my involvement in the Microsoft development community. I've been with Microsoft since 1998 - almost 17 years! 
-        In that time, I've been a consultant, a pre-sales technical salesman, an architect evangelist, an architect with Microsoft's internal IT department, 
-        the program manager for <a href="http://ironpython.net/">IronPython</a> and a program manager for <a href="https://en.wikipedia.org/wiki/Windows_Runtime">Windows Runtime</a>. 
-        By early 2014, I was tired of writing specs and missed writing code so I switched to a developer role. 
-        After spending most of 2014 on a research project, 
-        I rejoined joined Microsoft's <a href="http://www.microsoft.com/en-us/windows">Operating Systems Group</a> (now known as the Windows and Devices Group)
-        to work on the platform plumbing that powers <a href="http://www.xbox.com/en-US/smartglass">SmartGlass</a>.     
-    </p>
-    <p>
-        I always say that the only way to build great products is to talk to the people who use it. 
-		So feel free to contact me via <a href="mailto:harry@@devhawk.net">email</a>, <a href="skype:harrypierson">Skype</a> or  
-        <a href="http://twitter.com/devhawk">Twitter</a>.   
-    </p>
-</section>
-
-<div class="col-md-6">
-    <h3>Recent Blog Posts</h3>
-    <ul>
-    @foreach (var post in Model)
-    {
-        <li>
-            <div><a asp-action="Post" asp-controller="Blog" asp-route-year="@post.Date.Year" asp-route-month="@post.Date.Month" asp-route-day="@post.Date.Day" asp-route-slug="@post.Slug">@post.Title</a></div>
-            <div>@post.Date.ToString("MMMM dd, yyyy")</div>
-        </li>
-    }
-    </ul>
-</div>
-<div class="col-md-6">
-    <h3>Some of My Presentations</h3>
-    <ul>
-    	<li><a href="https://channel9.msdn.com/Events/Build/2014/KEY01#time=1h35m39s">Brokered Components Demo from Build 2014 Keynote</a></li>
-    	<li><a href="http://search.channel9.msdn.com/content/result?sid=6da70d01-5ca9-458e-92c6-ac41ce8a2067&rid=9b7502cf-8d24-4681-98d1-9f5d00bc8e86">Using the Windows Runtime from C# and Visual Basic (Build 2011)</a></li>
-        <li><a href="http://1drv.ms/1Jls58l">Developer 2.0</a></li>
-    	<li><a href="http://search.channel9.msdn.com/content/result?sid=e91577f7-7696-4b02-bf6d-81a643689805&rid=e2661829-9adf-49e9-899c-9deb001f8584">Pumping Iron: Dynamic Languages on .NET</a></li>
-        <li><a href="http://1drv.ms/1JlsaJc">Moving Beyong Industrial Software</a></li>
-    	<li><a href="http://search.channel9.msdn.com/content/result?sid=d6bb54a1-fca9-4813-b92b-6f0be9dba9bc&rid=9144b8dd-083a-4d8f-89ea-a2fe017ca507">Respecting Your Investments (Build 2014)</a></li>
-        <li><a href="http://1drv.ms/1I6XHlN">Not Everything is a Nail</a></li>
-    	<li><a href="http://search.channel9.msdn.com/content/result?sid=6da70d01-5ca9-458e-92c6-ac41ce8a2067&rid=b513624d-9589-4c67-9754-a0520026e179">Building Windows Runtime Components with C++ </a></li>
-    	<li><a href="http://search.channel9.msdn.com/content/result?sid=d6bb54a1-fca9-4813-b92b-6f0be9dba9bc&rid=5fd60394-42d1-4b09-ad57-a1e800f544cb">Making your Windows Store Apps More Reliable (Build 2013)</a></li>
-    </ul>
+<div class="container" role="main">
+    <div class="row">
+        <section id="about-me">
+            <p>
+                My real name is Harry Pierson, but I've gone by "DevHawk" online since I 
+                <a asp-action="Post" asp-controller="Blog" asp-route-year="2003" asp-route-month="1" asp-route-day="15" asp-route-slug="new-and-improved-devhawk">started this blog back in 2003</a>.
+                My blog originally ran on an engine of my own design, then <a href="https://github.com/shanselman/dasblog">DasBlog</a>, then <a href="https://wordpress.org/">WordPress</a>. 
+                However, I missed having my own sandbox on the web, so I built a new engine called Hawk (natch) to power the blog. 
+                It's written in C#, uses <a href="https://github.com/aspnet/home">ASP.NET 5</a> and runs on <a href="http://azure.microsoft.com/">Azure</a>. 
+                Source code coming soon!
+            </p>  
+            <p> 
+                I'm known best for my involvement in the Microsoft development community. I've been with Microsoft since 1998 - almost 17 years! 
+                In that time, I've been a consultant, a pre-sales technical salesman, an architect evangelist, an architect with Microsoft's internal IT department, 
+                the program manager for <a href="http://ironpython.net/">IronPython</a> and a program manager for <a href="https://en.wikipedia.org/wiki/Windows_Runtime">Windows Runtime</a>. 
+                By early 2014, I missed writing code and was tired writing specs so I switched to a developer role. 
+                After spending most of 2014 on a research project, 
+                I rejoined joined Microsoft's <a href="http://www.microsoft.com/en-us/windows">Operating Systems Group</a> (now known as the Windows and Devices Group)
+                to work on the platform plumbing that powers <a href="http://www.xbox.com/en-US/smartglass">SmartGlass</a>.     
+            </p>
+            <p>
+                I always say that the only way to build great products is to talk to the people who use it. 
+        		So feel free to contact me via <a href="mailto:harry@@devhawk.net">email</a>, <a href="skype:harrypierson">Skype</a> or  
+                <a href="http://twitter.com/devhawk">Twitter</a>.   
+            </p>
+        </section>
+        
+        <section id="recent-stuff">
+            <div class="col-md-6">
+                <div id="recent-blog-posts">
+                    <h3>Recent Blog Posts</h3>
+                    <ul>
+                        @foreach (var post in Model)
+            {
+                            <li>
+                                <div><a asp-action="Post" asp-controller="Blog" asp-route-year="@post.Date.Year" asp-route-month="@post.Date.Month" asp-route-day="@post.Date.Day" asp-route-slug="@post.Slug">@post.Title</a></div>
+                                <div>@post.Date.ToString("MMMM dd, yyyy")</div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="recent-presentations">
+                    <h3>Some of My Presentations</h3>
+                    <ul>
+                        <li><a href="https://channel9.msdn.com/Events/Build/2014/KEY01#time=1h35m39s">Brokered Components Demo from Build 2014 Keynote</a></li>
+                        <li><a href="http://search.channel9.msdn.com/content/result?sid=6da70d01-5ca9-458e-92c6-ac41ce8a2067&rid=9b7502cf-8d24-4681-98d1-9f5d00bc8e86">Using the Windows Runtime from C# and Visual Basic (Build 2011)</a></li>
+                        <li><a href="http://1drv.ms/1Jls58l">Developer 2.0</a></li>
+                        <li><a href="http://search.channel9.msdn.com/content/result?sid=e91577f7-7696-4b02-bf6d-81a643689805&rid=e2661829-9adf-49e9-899c-9deb001f8584">Pumping Iron: Dynamic Languages on .NET</a></li>
+                        <li><a href="http://1drv.ms/1JlsaJc">Moving Beyong Industrial Software</a></li>
+                        <li><a href="http://search.channel9.msdn.com/content/result?sid=d6bb54a1-fca9-4813-b92b-6f0be9dba9bc&rid=9144b8dd-083a-4d8f-89ea-a2fe017ca507">Respecting Your Investments (Build 2014)</a></li>
+                        <li><a href="http://1drv.ms/1I6XHlN">Not Everything is a Nail</a></li>
+                        <li><a href="http://search.channel9.msdn.com/content/result?sid=6da70d01-5ca9-458e-92c6-ac41ce8a2067&rid=b513624d-9589-4c67-9754-a0520026e179">Building Windows Runtime Components with C++ </a></li>
+                        <li><a href="http://search.channel9.msdn.com/content/result?sid=d6bb54a1-fca9-4813-b92b-6f0be9dba9bc&rid=5fd60394-42d1-4b09-ad57-a1e800f544cb">Making your Windows Store Apps More Reliable (Build 2013)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
 </div>
