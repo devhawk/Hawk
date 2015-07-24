@@ -1,43 +1,95 @@
-@devhawk-blue: #3e4a82;
-@decorative-font: 'Audiowide', cursive;
+// common variables
+@devhawk-blue: #7D85CD;
 
-.navbar-text {
+@decorative-font: 'Audiowide', cursive;
+@header-font: 'Roboto Slab', serif;
+@body-font: 'Roboto', sans-serif;
+@condensed-font: 'Roboto Condensed', sans-serif;
+@monospace-font: 'Roboto Mono', Consolas, "Courier New", monospace;
+
+@body-font-size: 14pt;
+
+// navbar styles
+.navbar-text-common() {
     a {
         color: white;
         font-family: @decorative-font;
 
         &:hover {
-            color:lightgreen;
+            color: greenyellow;
         }
     }
 }
 
 .navbar {
     background-image: url(/images/bg-main.jpg);
-    margin-bottom:0px;
-    border-bottom-width: 5px;
-    .navbar-header { .navbar-text;  }
-    .navbar-nav li { .navbar-text; font-size: 18px; }
-}
+    margin-bottom: 0px;
+    border-width: 0 0 5px;
+    border-color: white;
 
-.navbar-brand {
-    font-size: 32px;
-}
-
-.background-cover() {
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-}
-
-.foobar {
-        font-family: @decorative-font;
-        color:white;
-        text-shadow: 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black;
-        margin:0px;
-        text-align:center;
+    .navbar-header {
+        .navbar-text-common;
     }
+
+    .navbar-nav li {
+        .navbar-text-common;
+        font-size: 20px;
+    }
+
+    .navbar-brand {
+        font-size: 32px;
+    }
+}
+
+
+// default body text styles
+body {
+    font-size: @body-font-size;
+    font-family: @body-font;
+}
+
+blockquote {
+    font-size: @body-font-size;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: @header-font;
+}
+
+a {
+    color: @devhawk-blue;
+
+    &:hover {
+        color: forestgreen;
+    }
+}
+
+
+//social link styles
+.social-link {
+    font-size: 50px;
+    color: @devhawk-blue;
+    // TODO: can I render the social links with an image fill?
+    //   example: http://www.codicode.com/art/background_text_effect_css_picture_svg_mask.aspx
+}
+
+footer p.copyright {
+    font-family: @condensed-font;
+}
+
+// homepage header styles
+.homePageHeader-text-common() {
+    font-family: @decorative-font;
+    color: white;
+    text-shadow: 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black;
+    margin: 0px;
+    text-align: center;
+}
 
 #homePageHeader {
     background-image: url('/images/banner.png');
@@ -45,95 +97,102 @@
     background-position: center;
     background-size: cover;
     margin-bottom: 50px;
-    
-    div { padding-top:40px; padding-bottom:40px}
-    h1 { .foobar; font-size:72pt; padding-bottom: 20px }
-    h2 { .foobar; font-size:48pt; }
+
+    div {
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    h1 {
+        .homePageHeader-text-common;
+        font-size: 72pt;
+        padding-bottom: 20px;
+    }
+
+    h2 {
+        .homePageHeader-text-common;
+        font-size: 48pt;
+    }
+}
+
+#about-me > p {
+    font-size: 18pt;
+    margin-bottom: 20px;
+}
+
+#recent-stuff h3 {
+    font-size: 24pt;
+}
+
+//blog post styles
+.blog-post-footer {
+    font-family: @condensed-font;
+    font-style: italic;
+    font-size: 12pt;
+}
+
+.blog-post-title {
+    font-weight: bold;
+    font-size: 24pt;
 }
 
 pre code {
     display: block;
-    overflow-x: auto;
-    padding: 0.5em;
-    background: white;
+    overflow-x: hidden;
     color: black;
     -webkit-text-size-adjust: none;
     -moz-text-size-adjust: none;
     -ms-text-size-adjust: none;
     text-size-adjust: none;
-    font-size: 14px;
-    font-family: 'Roboto Mono', Consolas, "Courier New", monospace;
+    font-size: 12pt;
+    font-family: @monospace-font;
 }
 
 .image-right {
     float: right;
+
+    img {
+        margin-top: 5px;
+        margin-left: 10px;
+    }
 }
 
 .image-left {
     float: left;
-}
 
-.social-link {
-    font-size: 50px;
-    color:@devhawk-blue;
-}
-
-.serif-font {
-    font-family: 'Roboto Slab', serif;
-}
-
-body {
-    font-size: 16px;
-    font-family: 'Roboto', sans-serif;
-}
-
-blockquote {
-    font-size: 16px;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Roboto Slab', serif;
-}
-
-.blog-post-footer {
-    font-family: 'Roboto Condensed', sans-serif;
-    font-style: italic;
-}
-
-.blog-post-title {
-    font-weight: bold;
-}
-
-#about-me > p {
-    font-size: 24px;
-    margin-bottom: 24px;
-}
-
-#recent-stuff {
-    h3 { font-size: 36px;}
-    a { font-size: 18px; }
-}
-
-.archive-month {
-    font-size: 24px;
-    text-decoration: underline;
-}
-
-.sidebar-categories {
-    font-size: larger;
+    img {
+        margin-top: 5px;
+        margin-right: 10px;
+    }
 }
 
 .prev-next-page {
     text-align: center;
     padding-top: 20px;
+
+    a {
+        font-size: 16pt;
+        font-family: @body-font;
+    }
 }
 
-.image-left img {
-    margin-top: 5px;
-    margin-right: 10px;
+.sidebar-title {
+    font-size: 24pt;
 }
 
-.image-right img {
-    margin-top: 5px;
-    margin-left: 10px;
+
+// archives styles
+#archive {
+    list-style-type: none;
 }
+
+#archive ul {
+    list-style-type: none;
+    margin-bottom:10px;
+}
+
+.archive-month {
+    font-family: @header-font;
+    font-size: 18pt;
+}
+

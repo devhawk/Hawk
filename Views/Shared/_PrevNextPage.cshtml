@@ -3,11 +3,11 @@
 <div class="prev-next-page">
     @if (!string.IsNullOrWhiteSpace(Model.Item1))
     {
-        <a class="btn btn-primary" href="@Model.Item1">← Older Posts</a>
+        <a class="btn btn-primary" href="@Model.Item1">← Newer Posts</a>
     }
 
     @if (!string.IsNullOrWhiteSpace(Model.Item2))
     {
-        <a class="btn btn-primary" href="@Model.Item2">Newer Posts →</a>
+        <a class="btn btn-primary" href="@Model.Item2">Older Posts →</a>
     }
 </div>
