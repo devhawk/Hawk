@@ -12,7 +12,6 @@ var paths = {
   webroot: "./" + project.webroot + "/"
 };
 
-paths.vsCss = paths.webroot + "bower/highlight.js/src/styles/vs.css";
 paths.css = paths.webroot + "css/**/*.css";
 paths.minCss = paths.webroot + "css/**/*.min.css";
 paths.concatCssDest = paths.webroot + "css/hawk.min.css";
@@ -28,7 +27,7 @@ gulp.task('less', function () {
 });
 
 gulp.task('css', ["clean:css", "less"], function() {
-    gulp.src([paths.css, paths.vsCss, "!" + paths.minCss])
+    gulp.src([paths.css, "!" + paths.minCss])
       .pipe(concat(paths.concatCssDest))
       .pipe(cssmin())
       .pipe(gulp.dest("."));
