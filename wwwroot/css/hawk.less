@@ -1,5 +1,6 @@
 // common variables
 @devhawk-blue: #7D85CD;
+@anchor-green: #349E46; //#41C457;
 
 @decorative-font: 'Audiowide', cursive;
 @header-font: 'Roboto Slab', serif;
@@ -16,7 +17,8 @@
         font-family: @decorative-font;
 
         &:hover {
-            color: greenyellow;
+            color: @anchor-green;
+            text-shadow: 0 0 4px black, 0 0 4px black, 0 0 4px black;
         }
     }
 }
@@ -41,15 +43,10 @@
     }
 }
 
-
 // default body text styles
-body {
+body, blockquote {
     font-size: @body-font-size;
     font-family: @body-font;
-}
-
-blockquote {
-    font-size: @body-font-size;
 }
 
 h1,
@@ -65,10 +62,9 @@ a {
     color: @devhawk-blue;
 
     &:hover {
-        color: forestgreen;
+        color: @anchor-green;
     }
 }
-
 
 //social link styles
 .social-link {
@@ -78,8 +74,12 @@ a {
     //   example: http://www.codicode.com/art/background_text_effect_css_picture_svg_mask.aspx
 }
 
-footer p.copyright {
-    font-family: @condensed-font;
+footer {
+    padding-top: 20px;
+    
+    p.copyright {
+        font-family: @condensed-font;
+    }
 }
 
 // homepage header styles
@@ -173,6 +173,14 @@ pre code {
     a {
         font-size: 16pt;
         font-family: @body-font;
+    }
+    
+    .prevbtn, .nextbtn {
+        background-color: @devhawk-blue;
+
+        &:hover {
+            background-color: @anchor-green;
+        }
     }
 }
 
