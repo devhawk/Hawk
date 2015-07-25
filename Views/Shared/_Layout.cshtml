@@ -8,7 +8,7 @@
         var tw = new StringCollectionTextWriter(Encoding.UTF8);
         tw.WriteLine("\n<li>");
         tw.Write("  <a href=\""); tw.Write(url); tw.WriteLine("\">");
-        tw.Write("      <i class=\"fi-"); tw.Write(iconIdentifier); tw.WriteLine(" social-link\"></i>");
+        tw.Write("      <i class=\"hawkicon-"); tw.Write(iconIdentifier); tw.WriteLine(" social-link\"></i>");
         tw.WriteLine("  </a>");
         tw.Write("</li>");
         
@@ -24,21 +24,15 @@
 
     <title>DevHawk @ViewBag.Title</title>
 
-<environment names="Development">
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
-</environment>
-<environment names="Staging,Production">
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
-</environment>
 
-    <link href="~/bower/highlight.js/src/styles/vs.css" rel="stylesheet">
-    @* TODO: figure out how to bring in foundation-icons via bower *@
-    <link href="~/css/foundation-icons.css" rel="stylesheet">
     <link href='//fonts.googleapis.com/css?family=Roboto:400,700|Roboto+Slab:400,700|Roboto+Condensed|Roboto+Mono' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Stalinist+One' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Audiowide' rel='stylesheet' type='text/css'>
+
 <environment names="Development">
-    <link rel="stylesheet/less" type="text/css" href="~/css/hawk.less" />
+    <link href="~/css/hawk.less" rel="stylesheet/less">
+    <link href="~/css/hawkicon.less" rel="stylesheet/less">
+    <link href="~/bower/highlight.js/src/styles/vs.css" rel="stylesheet">
 </environment>
 <environment names="Staging,Production">
     <link rel="stylesheet" type="text/css" href="~/css/hawk.css" />
@@ -75,13 +69,13 @@
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <ul class="list-inline text-center">
                         @SocialLink("mailto:harry@devhawk.net", "mail")
-                        @SocialLink("skype:harrypierson", "social-skype")
-                        @SocialLink("http://twitter.com/devhawk", "social-twitter")
-                        @SocialLink("https://github.com/devhawk/", "social-github")
-                        @SocialLink("http://stackoverflow.com/users/1179731/devhawk", "social-stack-overflow")
-                        @SocialLink("http://facebook.com/devhawk", "social-facebook")
-                        @SocialLink("https://www.linkedin.com/in/harrypierson", "social-linkedin")
-                        @SocialLink("http://live.xbox.com/member/RayTracer", "social-xbox") 
+                        @SocialLink("skype:harrypierson", "skype")
+                        @SocialLink("http://twitter.com/devhawk", "twitter")
+                        @SocialLink("https://github.com/devhawk/", "github")
+                        @SocialLink("http://stackoverflow.com/users/1179731/devhawk", "stackoverflow")
+                        @SocialLink("http://facebook.com/devhawk", "facebook")
+                        @SocialLink("https://www.linkedin.com/in/harrypierson", "linkedin")
+                        @SocialLink("http://live.xbox.com/member/RayTracer", "xbox") 
                     </ul>
                     <p class="copyright text-muted text-center">Copyright &copy; Harry Pierson @DateTime.Now.Year</p>
                 </div>
@@ -91,13 +85,9 @@
 
 <environment names="Development">
     <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.js"></script>
-    <script src="//code.jquery.com/jquery-2.1.4.js"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.js"></script>
 </environment>
-<environment names="Staging,Production">
     <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-</environment>
 
 </body>
 </html>
