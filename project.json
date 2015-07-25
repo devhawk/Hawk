@@ -52,6 +52,9 @@
       "npm install",
       ".\\node_modules\\.bin\\bower.cmd install",
       ".\\node_modules\\.bin\\gulp.cmd css"
+    ],
+    "postpublish": [
+      ".\\node_modules\\.bin\\gulp.cmd output:css"
     ]
   }
 }

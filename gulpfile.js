@@ -5,19 +5,26 @@ var less = require('gulp-less');
 var path = require('path');
 var concat = require("gulp-concat");
 var cssmin = require("gulp-cssmin");
-var rimraf = require("rimraf");
+var del = require('del');
 var project = require("./project.json");
 
 var paths = {
-  webroot: "./" + project.webroot + "/"
+  webroot: "./" + project.webroot + "/",
+  outputWebroot: "./bin/output/" + project.webroot + "/"
 };
 
 paths.css = paths.webroot + "css/**/*.css";
 paths.minCss = paths.webroot + "css/**/*.min.css";
 paths.concatCssDest = paths.webroot + "css/hawk.min.css";
+paths.outputCssFolder = paths.outputWebroot + "css/";
+paths.outputMinCss = paths.outputWebroot + "css/**/*.min.css";
  
 gulp.task('clean:css', function(cb) {
-    rimraf(paths.css, cb);
+    del(paths.css, cb);
+});
+
+gulp.task('output:css', function(cb) {
+  del([paths.outputCssFolder + "*.css", paths.outputCssFolder + "*.less", "!" + paths.outputMinCss], cb);
 });
 
 gulp.task('less', function () {
