@@ -32,3 +32,5 @@ gulp.task('css', ["clean:css", "less"], function() {
       .pipe(cssmin())
       .pipe(gulp.dest("."));
 })
+
+gulp.task('clean', ["clean:css"]);
