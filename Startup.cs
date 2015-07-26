@@ -16,6 +16,7 @@ namespace HawkProto2
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
+                .AddUserSecrets()
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -26,8 +27,10 @@ namespace HawkProto2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddInstance<IPostRepository>(HawkFileSystemPostRepository.GetRepository());
-            //  services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(Azure.CloudStorageAccount.DevelopmentStorageAccount));
+
+            var creds = new Azure.Auth.StorageCredentials("hawkblogstorage", Configuration.Get("storageKey"));
+            var account = new Azure.CloudStorageAccount(creds, false);
+            services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -42,8 +45,7 @@ namespace HawkProto2
             }
             else
             {
-                // Add Error handling middleware which catches all application specific errors and
-                // send the request to the following path or controller action.
+                // TODO: Add Error Handler
                 //  app.UseErrorHandler("/Home/Error");
             }
 

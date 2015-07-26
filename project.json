@@ -1,5 +1,6 @@
 {
   "webroot": "wwwroot",
+  "userSecretsId": "hawk-proto2-37070d15-24ac-497b-95b0-998c4eec5416",
   "version": "1.0.0-*",
 
   "dependencies": {
@@ -12,6 +13,7 @@
     "Microsoft.Framework.Logging": "1.0.0-beta5",
     "Microsoft.Framework.Logging.Console": "1.0.0-beta5",
     "Microsoft.Framework.Cache.Memory": "1.0.0-beta3",
+    "Microsoft.Framework.Configuration.UserSecrets": "1.0.0-beta5",
     "WindowsAzure.Storage": "4.4.1-preview",
     "Newtonsoft.Json": "7.0.1",
     "Kestrel": "1.0.0-beta5",
