@@ -28,9 +28,14 @@ namespace HawkProto2
         {
             services.AddMvc();
 
-            var creds = new Azure.Auth.StorageCredentials("hawkblogstorage", Configuration.Get("storageKey"));
-            var account = new Azure.CloudStorageAccount(creds, false);
-            services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
+            var path = Configuration.Get("storage:FileSystemPath");
+            services.AddInstance<IPostRepository>(FileSystemPostRepository.GetRepository(path));
+            
+            //  var creds = new Azure.Auth.StorageCredentials(
+            //      Configuration.Get("storage:AccountName"), 
+            //      Configuration.Get("storage:AccountKey"));
+            //  var account = new Azure.CloudStorageAccount(creds, false);
+            //  services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
