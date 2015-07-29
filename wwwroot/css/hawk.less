@@ -1,6 +1,7 @@
 // common variables
-@devhawk-blue: #7D85CD;
-@anchor-green: #349E46;
+@devhawk-blue: #31397F;
+@triadic-red: #7F3038;
+@triadic-green: #387F30;
 
 @decorative-font: 'Audiowide', cursive;
 @header-font: 'Roboto Slab', serif;
@@ -17,8 +18,8 @@
         font-family: @decorative-font;
 
         &:hover {
-            color: @anchor-green;
-            text-shadow: 0 0 4px black, 0 0 4px black, 0 0 4px black;
+            color: @triadic-green;
+            text-shadow: 0 0 4px white;
         }
     }
 }
@@ -62,7 +63,7 @@ a {
     color: @devhawk-blue;
 
     &:hover {
-        color: @anchor-green;
+        color: @triadic-green;
     }
 }
 
@@ -76,7 +77,7 @@ a {
 
 footer {
     padding-top: 20px;
-    
+
     p.copyright {
         font-family: @condensed-font;
     }
@@ -115,9 +116,11 @@ footer {
     }
 }
 
-#about-me > p {
-    font-size: 18pt;
-    margin-bottom: 20px;
+#about-me {
+    p {
+        font-size: 18pt;
+        margin-bottom: 20px;
+    }
 }
 
 #recent-stuff h3 {
@@ -125,6 +128,12 @@ footer {
 }
 
 //blog post styles
+.blog-post-content {
+    a {
+        text-decoration: underline;
+    }
+}
+
 .blog-post-footer {
     font-family: @condensed-font;
     font-style: italic;
@@ -134,6 +143,22 @@ footer {
 .blog-post-title {
     font-weight: bold;
     font-size: 24pt;
+}
+
+div.blog-comment + div.blog-comment  {
+    border-top-width: 5px;
+    border-top-style: solid;
+    border-top-color: @devhawk-blue;
+    margin-top: 25px;
+    padding-top: 25px;
+}
+
+// div.blog-comment:last-of-type  {
+//     margin-bottom: 0px;
+// }
+
+.blog-comment-footer {
+    .blog-post-footer();
 }
 
 pre code {
@@ -174,12 +199,12 @@ pre code {
         font-size: 16pt;
         font-family: @body-font;
     }
-    
+
     .prevbtn, .nextbtn {
         background-color: @devhawk-blue;
 
         &:hover {
-            background-color: @anchor-green;
+            background-color: @triadic-green;
         }
     }
 }
@@ -196,11 +221,10 @@ pre code {
 
 #archive ul {
     list-style-type: none;
-    margin-bottom:10px;
+    margin-bottom: 10px;
 }
 
 .archive-month {
     font-family: @header-font;
     font-size: 18pt;
 }
-

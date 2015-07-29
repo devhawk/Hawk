@@ -4,21 +4,49 @@
     Layout = "_BlogLayout";
 }
 
+@functions
+{
+    HtmlString CommentAuthor(CommentAuthor author)
+    {
+        var tw = new StringCollectionTextWriter(System.Text.Encoding.UTF8);
+        var link = !string.IsNullOrEmpty(author.Url) 
+            ? author.Url
+            : !string.IsNullOrEmpty(author.Email)
+                ? "mailto:" + author.Email
+                :  null;
+        
+        if (!string.IsNullOrEmpty(link))
+        {
+            tw.Write("<a href=\"");
+            tw.Write(link);
+            tw.Write("\">");
+        }
+        tw.Write(author.Name);
+        if (!string.IsNullOrEmpty(link))
+        {
+            tw.WriteLine("</a>");
+        }
+
+        return new HtmlString(tw);
+    }
+}
+
 @await Html.PartialAsync("_Post", Model)
 
 @if (Model.CommentCount > 0)
 {
-    <div>
-        <h3>Comments:</h3>
-        <ul>
+    <div class="blog-comments">
+        <h3 class="blog-comments-header">Comments:</h3>
         @foreach (var comment in Model.Comments())
         {
-            <li id="comment-@comment.Id">
-                <div>@comment.Author.Name</div>
-                <div>@Html.Raw(comment.Content)</div>
-                <div>@comment.Date.ToString("MMMM d, yyyy") at @comment.Date.ToString("h:mm tt")</div>
-            </li>
+            <div class="blog-comment">
+                <div class="blog-comment-content">@Html.Raw(comment.Content)</div>
+                <div class="blog-comment-footer">
+                    This comment was posted by @CommentAuthor(comment.Author) 
+                    on @comment.Date.ToString("MMMM d, yyyy") 
+                    at @comment.Date.ToString("h:mm tt")
+                </div>
+            </div>
         }
-        </ul>
     </div>
 }
