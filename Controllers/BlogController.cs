@@ -74,9 +74,9 @@ namespace HawkProto2
             // generate previous / next page link URLs
             // If we're already on the first/last page, then don't generate prev/next page URLs
             // If we're on page 2, generate the prev page link to the root action instead of action/page/1             
-            ViewBag.PrevNextPageLinks = Tuple.Create(
-                pageNum == 1 ? string.Empty : (pageNum == 2 ? Url.Action(action, routeValues) : Url.Action(actionPage, GetRouteValues(pageNum - 1, routeValues))),
-                pageNum == pageCount ? string.Empty : Url.Action(actionPage, GetRouteValues(pageNum + 1, routeValues)));
+            
+            ViewBag.NewerPostsLink = pageNum == 1 ? string.Empty : (pageNum == 2 ? Url.Action(action, routeValues) : Url.Action(actionPage, GetRouteValues(pageNum - 1, routeValues))); 
+            ViewBag.OlderPostsLink = pageNum == pageCount ? string.Empty : Url.Action(actionPage, GetRouteValues(pageNum + 1, routeValues));
             
             return View("MultiplePosts", pagePosts);
         }   
@@ -157,17 +157,23 @@ namespace HawkProto2
                 _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day), 
                 pageNum, "PostsByMonth", new { year = year, month = month, day = day });
         }
+        
+        string GeneratePostUrl(Post post)
+        {
+            return Url.Action("Post", new {year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = post.Slug});
+        }
 
         [Route("{year:int}/{month:range(1,12)}/{day:range(1,31)}/{slug}")]
         public IActionResult Post(int year, int month, int day, string slug)
         {
             Log();
+            
             var post = _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day && p.Slug == slug).FirstOrDefault();
-            if (post == null)
+            if (post == null)            
             {
                 return HttpNotFound();
             }
-            
+
             return View("Post", post);
         }
 

@@ -2,7 +2,6 @@
     
 @{
     Layout = "_BlogLayout";
-    var prevNextPageLinks = ViewBag.PrevNextPageLinks as Tuple<string, string>;
 }
 
 @if (ViewBag.PageHeader != null)
@@ -14,7 +13,17 @@
     @Html.Partial("_Post", post);
 }
 
-@if (prevNextPageLinks != null)
+@if (ViewBag.OlderPostsLink != null || ViewBag.NewerPostsLink != null)
 {
-    @await Html.PartialAsync("_PrevNextPage", prevNextPageLinks)
+<div class="prev-next-page">
+    @if (!string.IsNullOrWhiteSpace(ViewBag.OlderPostsLink))
+    {
+        <a class="btn btn-primary prevbtn" href="@ViewBag.OlderPostsLink">← Older Posts</a>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(ViewBag.NewerPostsLink))
+    {
+        <a class="btn btn-primary nextbtn" href="@ViewBag.NewerPostsLink">Newer Posts →</a>
+    }
+</div>
 }
