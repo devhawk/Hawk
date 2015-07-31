@@ -29,6 +29,30 @@
         
         return new HtmlString(tw);
     }
+    
+    HtmlString CommentText(Post post)
+    {
+        var tw = new StringCollectionTextWriter(System.Text.Encoding.UTF8);
+        
+        if (post.CommentCount > 0)
+        {
+            tw.Write("There ");
+            if (post.CommentCount == 1)
+            {
+                tw.Write("is ");
+                tw.Write(post.CommentCount.ToString());
+                tw.Write(" comment.");
+            }
+            else
+            {
+                tw.Write("are ");
+                tw.Write(post.CommentCount.ToString());
+                tw.Write(" comments.");
+            }
+        }
+
+        return new HtmlString(tw);
+    }
 }
 
 <div class="blog-post">
@@ -41,6 +65,7 @@
         by <a asp-action="Author" asp-controller="Blog" asp-route-slug="@Model.Author.Slug">@Model.Author.Name</a>
         on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM dd, yyyy")</a> 
         @CommaSeperatedList("in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })))
-        @CommaSeperatedList("and tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug })))
+        @CommaSeperatedList("and tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug }))).
+        @CommentText(Model)
     </div>
 </div>
