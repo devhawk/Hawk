@@ -11,7 +11,7 @@ namespace HawkProto2
             TItem item;
             return cache.TryGetValue<TItem>(key, out item)
                 ? item 
-                : cache.Set<TItem>(key, await func(key));
+                : cache.Set<TItem>(key, await func(key), new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5)});
         }
         
         public static TItem Memoize<TItem>(this IMemoryCache cache, string key, Func<string, TItem> func)
@@ -19,7 +19,7 @@ namespace HawkProto2
             TItem item;
             return cache.TryGetValue<TItem>(key, out item)
                 ? item 
-                : cache.Set<TItem>(key, func(key));
+                : cache.Set<TItem>(key, func(key), new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5)});
         }
     }
 }

@@ -56,7 +56,7 @@ namespace HawkProto2
         
         static IObservable<T> ObserveTableQuery<T>(CloudTable table, TableQuery<T> query) where T : ITableEntity, new()
         {
-            return System.Reactive.Linq.Observable.Create<T>(
+            return Observable.Create<T>(
                 async obs =>
                 {
                     var token = new TableContinuationToken();

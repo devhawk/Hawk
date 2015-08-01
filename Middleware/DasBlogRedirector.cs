@@ -171,8 +171,8 @@ namespace HawkProto2
 				.Bind(PathMatch(@"^/monthview,year,(\d{4})\.aspx$", "/blog/{0}"))
 				.Bind(PathQueryMatch("/monthview.aspx", "month", @"^(\d{4})-(\d\d?)$", "/blog/{0}/{1}"))
 				.Bind(PathQueryMatch("/monthview.aspx", "year", @"^(\d{4})$", "/blog/{0}"))
-				.Bind(PathMatch(@"^/CategoryView,category,(.*)\.aspx$", "/blog/category/{0}"))
-				.Bind(PathQueryMatch("/CategoryView.aspx", "category", @"^(.*)$", "/blog/category/{0}"))
+				//  .Bind(PathMatch(@"^/CategoryView,category,(.*)\.aspx$", "/blog/category/{0}"))
+				//  .Bind(PathQueryMatch("/CategoryView.aspx", "category", @"^(.*)$", "/blog/category/{0}"))
 				
 				//  .Bind(PathMatch(@"^/SearchView,q,(.*)\.aspx$", "/search?q={0}"))
 				//  .Bind(PathQueryMatch("/SearchView.aspx", "q", "/search?q={0}"))

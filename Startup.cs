@@ -16,8 +16,11 @@ namespace HawkProto2
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
+                .AddJsonFile("config.json", optional: true)
+                .AddJsonFile($"config.{env.EnvironmentName}.json", optional: true)
                 .AddUserSecrets()
                 .AddEnvironmentVariables();
+            
             Configuration = builder.Build();
         }
 
@@ -27,15 +30,20 @@ namespace HawkProto2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-
-            var path = Configuration.Get("storage:FileSystemPath");
-            services.AddInstance<IPostRepository>(FileSystemPostRepository.GetRepository(path));
             
-            //  var creds = new Azure.Auth.StorageCredentials(
-            //      Configuration.Get("storage:AccountName"), 
-            //      Configuration.Get("storage:AccountKey"));
-            //  var account = new Azure.CloudStorageAccount(creds, false);
-            //  services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
+            if (string.Compare(Configuration.Get("Data:PostRepostitory"), "FileSystem", true) == 0)
+            {
+                var path = Configuration.Get("storage:FileSystemPath");
+                services.AddInstance<IPostRepository>(FileSystemPostRepository.GetRepository(path));
+            }  
+            else
+            {
+                var creds = new Azure.Auth.StorageCredentials(
+                    Configuration.Get("storage:AccountName"), 
+                    Configuration.Get("storage:AccountKey"));
+                var account = new Azure.CloudStorageAccount(creds, false);
+                services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
+            }
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
