@@ -18,9 +18,15 @@ namespace HawkProto2
             // Setup configuration sources.
             var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
                 .AddJsonFile("config.json", optional: true)
-                .AddJsonFile($"config.{env.EnvironmentName}.json", optional: true)
-                .AddUserSecrets()
-                .AddEnvironmentVariables();
+                .AddJsonFile($"config.{env.EnvironmentName}.json", optional: true);
+                
+            if (env.IsDevelopment())
+            {
+                builder.AddUserSecrets();
+                builder.AddApplicationInsightsSettings(developerMode: true);
+            }
+                
+            builder.AddEnvironmentVariables();
             
             Configuration = builder.Build();
         }
@@ -31,6 +37,7 @@ namespace HawkProto2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddApplicationInsightsTelemetry(Configuration);
             
             var postRepo = Configuration.Get("PostRepostitory");
             
@@ -70,13 +77,13 @@ namespace HawkProto2
             {
                 logger.LogInformation($"Using Azure Post Repository by default.");    
             }
-
             
+            app.UseApplicationInsightsRequestTelemetry();
             
             // Use the error page only in development environment.
             if (env.IsDevelopment())
             {
-                app.UseErrorPage(ErrorPageOptions.ShowAll);
+                app.UseErrorPage();
             }
             else
             {
@@ -84,6 +91,8 @@ namespace HawkProto2
                 //  app.UseErrorHandler("/Home/Error");
             }
 
+            app.UseApplicationInsightsExceptionTelemetry();
+            
             app.UseMiddleware<DasBlogRedirector>();
             app.UseMiddleware<NotFoundMiddleware>();
             app.UseStaticFiles(new StaticFileOptions() { ServeUnknownFileTypes = env.IsDevelopment() });
