@@ -4,19 +4,19 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.AspNet.Diagnostics": "1.0.0-beta5",
-    "Microsoft.AspNet.Mvc": "6.0.0-beta5",
-    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-beta5",
-    "Microsoft.AspNet.Server.IIS": "1.0.0-beta5",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-beta5",
-    "Microsoft.AspNet.StaticFiles": "1.0.0-beta5",
-    "Microsoft.Framework.Logging": "1.0.0-beta5",
-    "Microsoft.Framework.Logging.Console": "1.0.0-beta5",
+    "Microsoft.AspNet.Diagnostics": "1.0.0-beta6",
+    "Microsoft.AspNet.Mvc": "6.0.0-beta6",
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-beta6",
+    "Microsoft.AspNet.Server.IIS": "1.0.0-beta6",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-beta6",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-beta6",
+    "Microsoft.Framework.Logging": "1.0.0-beta6",
+    "Microsoft.Framework.Logging.Console": "1.0.0-beta6",
     "Microsoft.Framework.Cache.Memory": "1.0.0-beta3",
-    "Microsoft.Framework.Configuration.UserSecrets": "1.0.0-beta5",
-    "WindowsAzure.Storage": "4.4.1-preview",
+    "Microsoft.Framework.Configuration.UserSecrets": "1.0.0-beta6",
     "Newtonsoft.Json": "7.0.1",
-    "Rx-Main": "2.3.0-beta2"
+    "Rx-Main": "2.3.0-beta2",
+    "WindowsAzure.Storage": "4.4.1-preview"
   },
 
   "commands": {
