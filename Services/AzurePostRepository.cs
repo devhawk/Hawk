@@ -114,8 +114,6 @@ namespace HawkProto2
                     })
                 .ToArray();
         }
-
-        
         
         static IEnumerable<Category> ConvertCategories(string text)
         {

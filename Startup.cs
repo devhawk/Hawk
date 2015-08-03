@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Hosting;
@@ -31,18 +32,25 @@ namespace HawkProto2
         {
             services.AddMvc();
             
-            if (string.Compare(Configuration.Get("Data:PostRepostitory"), "FileSystem", true) == 0)
-            {
-                var path = Configuration.Get("storage:FileSystemPath");
-                services.AddInstance<IPostRepository>(FileSystemPostRepository.GetRepository(path));
-            }  
-            else
+            var postRepo = Configuration.Get("PostRepostitory");
+            
+            // default to using Azure
+            if (string.IsNullOrEmpty(postRepo) || string.Equals(postRepo, "Azure", StringComparison.OrdinalIgnoreCase))
             {
                 var creds = new Azure.Auth.StorageCredentials(
                     Configuration.Get("storage:AccountName"), 
                     Configuration.Get("storage:AccountKey"));
                 var account = new Azure.CloudStorageAccount(creds, false);
                 services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
+            } 
+            // but also support using the file system
+            else if (string.Equals(postRepo, "FileSystem", StringComparison.OrdinalIgnoreCase))
+            {
+                var path = Configuration.Get("storage:FileSystemPath");
+                services.AddInstance<IPostRepository>(FileSystemPostRepository.GetRepository(path));
+            }  
+            else {
+                throw new Exception($"Invalid PostRepository specified ({postRepo})");
             }
         }
 
@@ -50,6 +58,20 @@ namespace HawkProto2
         {
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
+            
+            var logger = loggerFactory.CreateLogger(nameof(Startup));
+            
+            string postRepo;
+            if (Configuration.TryGet("PostRepostitory", out postRepo))
+            {
+                logger.LogInformation($"Using {postRepo} Post Repository.");    
+            }
+            else 
+            {
+                logger.LogInformation($"Using Azure Post Repository by default.");    
+            }
+
+            
             
             // Use the error page only in development environment.
             if (env.IsDevelopment())
