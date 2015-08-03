@@ -1,57 +1,55 @@
 @model Post
-@using Microsoft.AspNet.Mvc.Rendering
-@using System.Text;
+@using Microsoft.AspNet.Html.Abstractions
 
 @functions
 {
-    HtmlString CommaSeperatedList(string intro, IEnumerable<HtmlString> items)
+    IHtmlContent CommaSeperatedList(string intro, IEnumerable<HtmlString> items)
     {
-        var tw = new StringCollectionTextWriter(Encoding.UTF8);
+        var bhc = new BufferedHtmlContent();
         int count = items.Count();
         
         if (count > 0)
         {
-            tw.Write(intro);
-            tw.Write(" ");
+            bhc.Append(intro);
+            bhc.Append(" ");
+        
+            bhc.Append(items.First());
+            foreach (var item in items.Skip(1).Take(count - 2))
+            {
+                bhc.Append(", ");
+                bhc.Append(item);
+            }
+            if (count > 1)
+            {
+                bhc.Append(" & ");
+                bhc.Append(items.Last()); 
+            }
+            bhc.Append(".");
         }
         
-        tw.Write(items.FirstOrDefault());
-        foreach (var item in items.Skip(1).Take(count - 2))
-        {
-            tw.Write(", ");
-            tw.Write(item);
-        }
-        if (count > 1)
-        {
-            tw.Write(" & ");
-            tw.Write(items.Last()); 
-        }
-        
-        return new HtmlString(tw);
+        return bhc;
     }
     
-    HtmlString CommentText(Post post)
+    IHtmlContent CommentText(Post post)
     {
-        var tw = new StringCollectionTextWriter(System.Text.Encoding.UTF8);
+        var bhc = new BufferedHtmlContent();
         
         if (post.CommentCount > 0)
         {
-            tw.Write("There ");
+            bhc.Append("There ");
             if (post.CommentCount == 1)
             {
-                tw.Write("is ");
-                tw.Write(post.CommentCount.ToString());
-                tw.Write(" comment.");
+                bhc.Append("is 1 comment.");
             }
             else
             {
-                tw.Write("are ");
-                tw.Write(post.CommentCount.ToString());
-                tw.Write(" comments.");
+                bhc.Append("are ");
+                bhc.Append(post.CommentCount.ToString());
+                bhc.Append(" comments.");
             }
         }
 
-        return new HtmlString(tw);
+        return bhc;
     }
 }
 
@@ -63,9 +61,9 @@
     <div class="blog-post-footer">
         This entry was posted
         by <a asp-action="Author" asp-controller="Blog" asp-route-slug="@Model.Author.Slug">@Model.Author.Name</a>
-        on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM dd, yyyy")</a> 
-        @CommaSeperatedList("in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })))
-        @CommaSeperatedList("and tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug }))).
+        on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM dd, yyyy")</a>. 
+        @CommaSeperatedList("It was posted in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })))
+        @CommaSeperatedList("It was tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug })))
         @CommentText(Model)
     </div>
 </div>

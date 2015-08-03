@@ -1,4 +1,5 @@
 @model Post
+@using Microsoft.AspNet.Html.Abstractions
 
 @{
     Layout = "_BlogLayout";
@@ -6,9 +7,9 @@
 
 @functions
 {
-    HtmlString CommentAuthor(CommentAuthor author)
+    IHtmlContent CommentAuthor(CommentAuthor author)
     {
-        var tw = new StringCollectionTextWriter(System.Text.Encoding.UTF8);
+        var bhc = new BufferedHtmlContent();
         var link = !string.IsNullOrEmpty(author.Url) 
             ? author.Url
             : !string.IsNullOrEmpty(author.Email)
@@ -17,17 +18,17 @@
         
         if (!string.IsNullOrEmpty(link))
         {
-            tw.Write("<a href=\"");
-            tw.Write(link);
-            tw.Write("\">");
+            bhc.Append("<a href=\"");
+            bhc.Append(link);
+            bhc.Append("\">");
         }
-        tw.Write(author.Name);
+        bhc.Append(author.Name);
         if (!string.IsNullOrEmpty(link))
         {
-            tw.WriteLine("</a>");
+            bhc.Append("</a>");
         }
 
-        return new HtmlString(tw);
+        return bhc;
     }
 }
 

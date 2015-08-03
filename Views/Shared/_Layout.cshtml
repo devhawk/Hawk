@@ -1,18 +1,19 @@
-﻿@using Microsoft.AspNet.Mvc.Rendering
+﻿@using Microsoft.AspNet.Html.Abstractions
 @using System.Text;
 
 @functions
 {
-    HtmlString SocialLink(string url, string iconIdentifier)
+    IHtmlContent SocialLink(string url, string iconIdentifier)
     {
-        var tw = new StringCollectionTextWriter(Encoding.UTF8);
-        tw.WriteLine("\n<li>");
-        tw.Write("  <a href=\""); tw.Write(url); tw.WriteLine("\">");
-        tw.Write("      <i class=\"hawkicon-"); tw.Write(iconIdentifier); tw.WriteLine(" social-link\"></i>");
-        tw.WriteLine("  </a>");
-        tw.Write("</li>");
+        var bhc = new BufferedHtmlContent();
         
-        return new HtmlString(tw);
+        bhc.Append("<li>"); 
+        bhc.Append("<a href=\""); bhc.Append(url); bhc.Append("\">"); 
+        bhc.Append("<i class=\"hawkicon-"); bhc.Append(iconIdentifier); bhc.Append(" social-link\"></i>"); 
+        bhc.Append("</a>"); 
+        bhc.Append("</li>");
+        
+        return bhc;
     }
 }
 
