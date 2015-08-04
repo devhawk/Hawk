@@ -20,9 +20,9 @@ namespace HawkProto2
                 .AddJsonFile("config.json", optional: true)
                 .AddJsonFile($"config.{env.EnvironmentName}.json", optional: true);
                 
+            builder.AddUserSecrets();
             if (env.IsDevelopment())
             {
-                builder.AddUserSecrets();
                 builder.AddApplicationInsightsSettings(developerMode: true);
             }
                 

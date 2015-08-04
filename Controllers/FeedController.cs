@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNet.Mvc;
+using Microsoft.ApplicationInsights;
 
 namespace HawkProto2
 {
@@ -36,16 +37,24 @@ namespace HawkProto2
         static readonly Uri ROOT_URL = new Uri("http://localhost:5000");
 
         private readonly IPostRepository _repo;
-        
-        public FeedController(IPostRepository repo)
+        private readonly TelemetryClient _telemetryClient;
+
+        public FeedController(IPostRepository repo, TelemetryClient telemetryClient)
         {
             if (repo == null)
             {
                 throw new ArgumentNullException(nameof(repo));
             }
             
+            if (telemetryClient == null)
+            {
+                throw new ArgumentNullException(nameof(telemetryClient));
+            }
+            
             this._repo = repo;
+            this._telemetryClient = telemetryClient;
         }
+
         
         [RouteAttribute("feed")]
         public IActionResult Index()
@@ -55,6 +64,8 @@ namespace HawkProto2
         
         async Task RssAsync(TextWriter writer)
         {
+            _telemetryClient.TrackPageView($"{Request.Path}{Request.QueryString}");
+            
             var settings = new XmlWriterSettings()
             {
                 Indent = true,
@@ -119,6 +130,8 @@ namespace HawkProto2
         
         async Task AtomAsync(TextWriter writer)
         {
+            _telemetryClient.TrackPageView($"{Request.Path}{Request.QueryString}");
+            
             var settings = new XmlWriterSettings()
             {
                 Indent = true,

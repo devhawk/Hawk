@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
@@ -24,6 +24,8 @@ namespace HawkProto2
 	    {
 			var loggerFactory = context.ApplicationServices.GetRequiredService<ILoggerFactory>();
 			var logger = loggerFactory.CreateLogger("NotFoundMiddleware");
+            
+            var telemetryClient = context.ApplicationServices.GetRequiredService<TelemetryClient>();
 
 			await _next(context);
 			
@@ -39,6 +41,7 @@ namespace HawkProto2
                 else
                 {
                     logger.LogWarning("{Path}{QueryString} Not Found", context.Request.Path, context.Request.QueryString);
+                    telemetryClient.TrackEvent("404", new Dictionary<string, string> {{ "url", $"{context.Request.Path}{context.Request.QueryString}" }});
                 }
             }
 
