@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HawkProto2
+namespace Hawk
 {
     public interface IPostRepository
     {

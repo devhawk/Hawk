@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Framework.Caching.Memory;
 
-namespace HawkProto2
+namespace Hawk
 {
     static class MemoryCacheExtensions
     {

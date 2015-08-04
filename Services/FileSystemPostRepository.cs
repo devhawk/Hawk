@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Microsoft.Framework.Caching.Memory;
 
-namespace HawkProto2
+namespace Hawk
 {    
     class FileSystemPostRepository : IPostRepository
     {

@@ -7,7 +7,7 @@ using System.Xml;
 using Microsoft.AspNet.Mvc;
 using Microsoft.ApplicationInsights;
 
-namespace HawkProto2
+namespace Hawk
 {
     class TextWriterResult : IActionResult
     {

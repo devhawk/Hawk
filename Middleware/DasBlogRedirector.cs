@@ -9,7 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 
-namespace HawkProto2
+namespace Hawk
 {
 	delegate string Redirector(string path, Func<string, string> query);
 	

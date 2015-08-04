@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNet.Mvc;
 
-namespace HawkProto2
+namespace Hawk
 {
     public class CategoryListViewComponent : ViewComponent
     {

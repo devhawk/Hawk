@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HawkProto2", "HawkProto2.xproj", "{1C88C25C-B34E-4316-A67D-94CE4DDE6DE2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hawk", "Hawk.xproj", "{1C88C25C-B34E-4316-A67D-94CE4DDE6DE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

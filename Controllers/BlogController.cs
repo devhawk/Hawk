@@ -7,7 +7,7 @@ using Microsoft.Framework.Logging;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 
-namespace HawkProto2
+namespace Hawk
 {
 	[Route("blog")]
     public class BlogController : Controller

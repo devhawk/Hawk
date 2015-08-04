@@ -9,7 +9,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace HawkProto2
+namespace Hawk
 {
 	class AzurePostRepository : IPostRepository
     {

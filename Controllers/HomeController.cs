@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.Framework.Logging;
 using Microsoft.AspNet.Mvc;
 
-namespace HawkProto2
+namespace Hawk
 {
     public class HomeController : Controller
     {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace HawkProto2
+namespace Hawk
 {
     public class Category
     {

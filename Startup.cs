@@ -9,7 +9,7 @@ using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Azure = Microsoft.WindowsAzure.Storage;
 
-namespace HawkProto2
+namespace Hawk
 {
     public class Startup
     {
