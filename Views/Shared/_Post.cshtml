@@ -1,5 +1,6 @@
 @model Post
 @using Microsoft.AspNet.Html.Abstractions
+@using Humanizer
 
 @functions
 {
@@ -37,16 +38,9 @@
         if (post.CommentCount > 0)
         {
             bhc.Append("There ");
-            if (post.CommentCount == 1)
-            {
-                bhc.Append("is 1 comment.");
-            }
-            else
-            {
-                bhc.Append("are ");
-                bhc.Append(post.CommentCount.ToString());
-                bhc.Append(" comments.");
-            }
+            bhc.Append(post.CommentCount == 1 ? "is " : "are ");
+            bhc.Append("comment".ToQuantity(post.CommentCount, ShowQuantityAs.Words));
+            bhc.Append(". ");
         }
 
         return bhc;

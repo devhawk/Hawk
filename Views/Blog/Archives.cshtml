@@ -1,5 +1,7 @@
 @model IEnumerable<Post>
 @using System.Globalization
+@using Microsoft.AspNet.Html.Abstractions
+@using Humanizer
 
 @{
     ViewBag.Title = " Archive";
@@ -13,9 +15,16 @@
         return CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthNumber);
     }
 
-    string CommentCount(int count) 
+    IHtmlContent CommentCount(int count) 
     {
-        return count > 0 ? string.Format("({0} comments)", count) : string.Empty;
+        var bhc = new BufferedHtmlContent();
+        if (count > 0)
+        {
+            bhc.Append("(");
+            bhc.Append("comment".ToQuantity(count, ShowQuantityAs.Words).Transform(To.SentenceCase));
+            bhc.Append(")");
+        }
+        return bhc;
     }
 }
 
