@@ -44,9 +44,15 @@ namespace Hawk
             // default to using Azure
             if (string.IsNullOrEmpty(postRepo) || string.Equals(postRepo, "Azure", StringComparison.OrdinalIgnoreCase))
             {
-                var creds = new Azure.Auth.StorageCredentials(
-                    Configuration.Get("storage:AccountName"), 
-                    Configuration.Get("storage:AccountKey"));
+                var accountName = Configuration.Get("storage:AccountName");
+                var accountKey  = Configuration.Get("storage:AccountKey"); 
+                
+                if (accountName == null || accountKey == null)
+                {
+                    throw new Exception("Azure Storage info not property configured");
+                }
+                
+                var creds = new Azure.Auth.StorageCredentials(accountName, accountKey);
                 var account = new Azure.CloudStorageAccount(creds, false);
                 services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
             } 
@@ -54,6 +60,11 @@ namespace Hawk
             else if (string.Equals(postRepo, "FileSystem", StringComparison.OrdinalIgnoreCase))
             {
                 var path = Configuration.Get("storage:FileSystemPath");
+                if (path == null)
+                {
+                    throw new Exception("FileSystem Storage path not property configured");
+                }
+
                 services.AddInstance<IPostRepository>(FileSystemPostRepository.GetRepository(path));
             }  
             else {
