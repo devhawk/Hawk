@@ -37,9 +37,18 @@
         
         if (post.CommentCount > 0)
         {
+            var url = Url.Action("Post", "Blog", new {
+                Year = post.Date.Year,
+                Month = post.Date.Month,
+                Day = post.Date.Day,
+                Slug = post.Slug
+            });
+
             bhc.Append("There ");
             bhc.Append(post.CommentCount == 1 ? "is " : "are ");
+            bhc.Append($"<a href=\"{url}#comments\">");
             bhc.Append("comment".ToQuantity(post.CommentCount, ShowQuantityAs.Words));
+            bhc.Append("</a>");
             bhc.Append(". ");
         }
 
@@ -55,7 +64,7 @@
     <div class="blog-post-footer">
         This entry was posted
         by <a asp-action="Author" asp-controller="Blog" asp-route-slug="@Model.Author.Slug">@Model.Author.Name</a>
-        on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM dd, yyyy")</a>. 
+        on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM") @Model.Date.Day.Ordinalize()@Model.Date.ToString(", yyyy")</a>. 
         @CommaSeperatedList("It was posted in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })))
         @CommaSeperatedList("It was tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug })))
         @CommentText(Model)

@@ -1,5 +1,6 @@
 @model Post
 @using Microsoft.AspNet.Html.Abstractions
+@using Humanizer
 
 @{
     Layout = "_BlogLayout";
@@ -36,7 +37,7 @@
 
 @if (Model.CommentCount > 0)
 {
-    <div class="blog-comments">
+    <div class="blog-comments"><a name="comments"></a>
         <h3 class="blog-comments-header">Comments:</h3>
         @foreach (var comment in Model.Comments())
         {
@@ -44,7 +45,7 @@
                 <div class="blog-comment-content">@Html.Raw(comment.Content)</div>
                 <div class="blog-comment-footer">
                     This comment was posted by @CommentAuthor(comment.Author) 
-                    on @comment.Date.ToString("MMMM d, yyyy") 
+                    on @comment.Date.ToString("MMMM") @comment.Date.Day.Ordinalize()@comment.Date.ToString(", yyyy") 
                     at @comment.Date.ToString("h:mm tt").
                 </div>
             </div>
