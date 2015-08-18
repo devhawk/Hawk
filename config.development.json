@@ -1,3 +1,4 @@
 {
-	"PostRepostitory": "FileSystem"
+	"PostRepostitory": "FileSystem",
+	"storage:FileSystemPath": "E:\\dev\\DevHawk\\Content\\"	
 }
