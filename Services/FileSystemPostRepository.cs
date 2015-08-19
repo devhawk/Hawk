@@ -58,6 +58,7 @@ namespace Hawk
         {
             return Directory
                 .EnumerateDirectories(path)
+                .Where(dir => File.Exists(Path.Combine(dir, ITEM_JSON)))
                 .Select(dir => {
                     var post = JsonConvert.DeserializeObject<FSPost>(File.ReadAllText(Path.Combine(dir, ITEM_JSON)));
 
