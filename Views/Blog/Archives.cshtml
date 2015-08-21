@@ -1,7 +1,6 @@
 @model IEnumerable<Post>
 @using System.Globalization
 @using Microsoft.AspNet.Html.Abstractions
-@using Humanizer
 
 @{
     ViewBag.Title = " Archive";
@@ -21,7 +20,14 @@
         if (count > 0)
         {
             bhc.Append("(");
-            bhc.Append("comment".ToQuantity(count, ShowQuantityAs.Words).Transform(To.SentenceCase));
+            
+            // TODO: Convert to Humanizr when available for DNX 
+            bhc.Append(count.ToString());
+            bhc.Append(" comment");
+            if (count > 1)
+            {
+                bhc.Append("s");
+            }
             bhc.Append(")");
         }
         return bhc;

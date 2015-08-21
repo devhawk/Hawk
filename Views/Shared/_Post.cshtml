@@ -1,6 +1,6 @@
 @model Post
 @using Microsoft.AspNet.Html.Abstractions
-@using Humanizer
+@*using Humanizer*@
 
 @functions
 {
@@ -45,9 +45,15 @@
             });
 
             bhc.Append("There ");
+            // TODO: Use Humanizr when it supports DNX
             bhc.Append(post.CommentCount == 1 ? "is " : "are ");
             bhc.Append($"<a href=\"{url}#comments\">");
-            bhc.Append("comment".ToQuantity(post.CommentCount, ShowQuantityAs.Words));
+            bhc.Append(post.CommentCount.ToString());
+            bhc.Append(" comment");
+            if (post.CommentCount > 1) 
+            {
+                bhc.Append("s");
+            }
             bhc.Append("</a>");
             bhc.Append(". ");
         }
@@ -64,7 +70,7 @@
     <div class="blog-post-footer">
         This entry was posted
         by <a asp-action="Author" asp-controller="Blog" asp-route-slug="@Model.Author.Slug">@Model.Author.Name</a>
-        on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM") @Model.Date.Day.Ordinalize()@Model.Date.ToString(", yyyy")</a>. 
+        on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM") @Model.Date.Day@Model.Date.ToString(", yyyy")</a>. 
         @CommaSeperatedList("It was posted in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })))
         @CommaSeperatedList("It was tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug })))
         @CommentText(Model)
