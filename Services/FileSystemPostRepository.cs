@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Microsoft.Framework.Caching.Memory;
 
 namespace Hawk
@@ -54,65 +55,93 @@ namespace Hawk
             return PostByDasBlogTitle(key);
         }
 
-        static IEnumerable<BlogEntry> GetPosts(string path)
+        static IEnumerable<Category> ConvertCsvCatString(string text)
         {
-            return Directory
-                .EnumerateDirectories(path)
-                .Where(dir => File.Exists(Path.Combine(dir, ITEM_JSON)))
-                .Select(dir => {
-                    var post = JsonConvert.DeserializeObject<FSPost>(File.ReadAllText(Path.Combine(dir, ITEM_JSON)));
-
-                    var compatFilePath = Path.Combine(dir, DASBLOG_COMPAT_JSON);
-                    var compat = File.Exists(compatFilePath) 
-                        ? JsonConvert.DeserializeObject<FSDasBlogCompat>(File.ReadAllText(compatFilePath))
-                        : null;
-                        
-                    return new BlogEntry
-                    {
-                        Directory = dir,
-                        Post = post,
-                        Compat = compat,
-                    };
+            if (string.IsNullOrEmpty(text))
+            {
+                return Enumerable.Empty<Category>();
+            }
+            
+            return text.Split(',')
+                .Select(s => s.Split('|'))
+                .Select((string[] a) => new Category
+                {
+                    Title = a[0],
+                    Slug = a[1],
                 });
         }
-
-        FileSystemPostRepository(IEnumerable<BlogEntry> blogEntries)
+        
+        static PostAuthor ConvertPostAuthor(string author)
         {
+            var a = author.Split('|');
+            return new PostAuthor
+            {
+                Name = a[0],
+                Slug = a[1],
+                Email = a[2],
+            };
+        }
+
+        static CommentAuthor ConvertCommentAuthor(JToken author)
+        {
+            return new CommentAuthor
+            {
+                Name = (string)author["author-name"],
+                Email = (string)author["author-email"],
+                Url = (string)author["author-url"],
+            };
+        }
+
+        FileSystemPostRepository(string path)
+        {
+            var fsPosts = Directory
+                .EnumerateDirectories(path)
+                .Where(dir => File.Exists(Path.Combine(dir, ITEM_JSON)))
+                .Select(dir => new
+                    {
+                        Directory = dir,
+                        Post = JObject.Parse(File.ReadAllText(Path.Combine(dir, ITEM_JSON))),
+                    });
+            
             _cache = new MemoryCache(new MemoryCacheOptions());
             var tempPosts = new List<Post>();
             
-            foreach (var entry in blogEntries)
+            foreach (var fsPost in fsPosts)
             {
                 var post = new Post()
                 {
-                    Slug = entry.Post.Slug,
-                    Title = System.Net.WebUtility.HtmlDecode(entry.Post.Title),
-                    Date = entry.Post.Date,
-                    DateModified = entry.Post.DateModified,
-                    Categories = entry.Post.Categories.ToList(),
-                    Tags = entry.Post.Tags.ToList(),
-                    Author = entry.Post.Author,
-                    CommentCount = entry.Post.CommentCount,
-
-                    Content = () => _cache.AsyncMemoize(Path.Combine(entry.Directory, ITEM_CONTENT), key => Task.Run(() => File.ReadAllText(key))),
-                    Comments = () => _cache.Memoize(Path.Combine(entry.Directory, COMMENTS_JSON), key => JsonConvert
-                        .DeserializeObject<FSComment[]>(File.ReadAllText(key))
+                    Slug = (string)fsPost.Post["slug"],
+                    Title = System.Net.WebUtility.HtmlDecode((string)fsPost.Post["title"]),
+                    Date = DateTimeOffset.Parse((string)fsPost.Post["date"]),
+                    DateModified = DateTimeOffset.Parse((string)fsPost.Post["modified"]),
+                    Categories = ConvertCsvCatString((string)fsPost.Post["csv-category-slugs"]).ToList(),
+                    Tags = ConvertCsvCatString((string)fsPost.Post["csv-tag-slugs"]).ToList(),
+                    Author = ConvertPostAuthor((string)fsPost.Post["author"]),
+                    CommentCount = int.Parse((string)fsPost.Post["comment-count"]),
+                    
+                    Content = () => _cache.AsyncMemoize(Path.Combine(fsPost.Directory, ITEM_CONTENT), key => Task.Run(() => File.ReadAllText(key))),
+                    Comments = () => _cache.Memoize(Path.Combine(fsPost.Directory, COMMENTS_JSON), key => JArray
+                        .Parse(File.ReadAllText(key))
                         .Select(fsc => new Comment
                             {
-                                Id = fsc.Id,
-                                Content = fsc.Content,
-                                Date = fsc.Date,
-                                Author = fsc.Author, 
+                                Content = (string)fsc["content"],
+                                Date = DateTimeOffset.Parse((string)fsc["date"]),
+                                Author = ConvertCommentAuthor(fsc), 
                             })),
                 };
 
                 tempPosts.Add(post);
-                
-                if (entry.Compat != null)
+
+                Guid? dasBlogEntryId = fsPost.Post["dasblog-entry-id"] != null ? Guid.Parse((string)fsPost.Post["dasblog-entry-id"]) : (Guid?)null;
+
+                if (dasBlogEntryId.HasValue)
                 {
-                    _indexDasBlogEntryId[entry.Compat.EntryId] = post;
-                    _indexDasBlogTitle[entry.Compat.Title.ToLower()] = post;
-                    _indexDasBlogTitle[entry.Compat.UniqueTitle.ToLower()] = post;
+                    string dasBlogSlug = (string)fsPost.Post["dasblog-title"] ?? null;
+                    string dasBlogUniqueSlug = (string)fsPost.Post["dasblog-unique-title"] ?? null;
+
+                    _indexDasBlogEntryId[dasBlogEntryId.Value] = post;
+                    _indexDasBlogTitle[dasBlogSlug.ToLower()] = post;
+                    _indexDasBlogTitle[dasBlogUniqueSlug.ToLower()] = post;                    
                 }
             }
 
@@ -133,121 +162,7 @@ namespace Hawk
         
         public static IPostRepository GetRepository(string path)
         {
-            return new FileSystemPostRepository(GetPosts(path));
-        }
-        
-        class BlogEntry
-        {
-            public string Directory { get; set; }
-            public FSPost Post { get; set; }
-            public FSDasBlogCompat Compat { get; set; }
-        }
-        
-    	class FSDasBlogCompat
-    	{
-            [JsonProperty("entry-id")]
-    	    public Guid EntryId { get; set; }
-    	    [JsonProperty("title")]
-    		public string Title { get; set; }
-    	    [JsonProperty("unique-title")]
-    		public string UniqueTitle { get; set; }
-    	}
-    	
-    	class FSPost
-    	{
-            [JsonProperty("id")]
-    	    public int Id { get; set; }
-            [JsonProperty("slug")]
-    	    public string Slug { get; set; }
-            [JsonProperty("title")]
-    	    public string Title { get; set; }
-            [JsonProperty("date")]
-    	    public DateTimeOffset Date { get; set; }
-            [JsonProperty("modified")]
-    	    public DateTimeOffset DateModified { get; set; }
-            [JsonProperty("csv-category-slugs")]
-    	    public string CsvCategorySlugs { get; set; }
-            [JsonProperty("csv-tag-slugs")]
-    	    public string CsvTagSlugs { get; set; }
-            [JsonProperty("author")]
-    	    public string InternalAuthor { get; set; }
-            [JsonProperty("comment_count")]
-    	    public int CommentCount { get; set; }
-    		
-    		private IEnumerable<Category> ConvertCsvCatString(string text)
-            {
-                if (string.IsNullOrEmpty(text))
-                {
-                    return Enumerable.Empty<Category>();
-                }
-                
-                return text.Split(',')
-                    .Select(s => s.Split('|'))
-                    .Select((string[] a) => new Category
-                    {
-                        Title = a[0],
-                        Slug = a[1],
-                    });
-            }
-         
-            [JsonIgnore]   
-            public IEnumerable<Category> Categories
-            {
-                get { return ConvertCsvCatString(CsvCategorySlugs); }
-            }
-    
-            [JsonIgnore]   
-            public IEnumerable<Category> Tags
-            {
-                get { return ConvertCsvCatString(CsvTagSlugs); }
-            }
-            
-            [JsonIgnore]   
-            public PostAuthor Author
-            {
-                get 
-                {
-                    var a = InternalAuthor.Split('|');
-                    return new PostAuthor
-                    {
-                        Name = a[0],
-                        Slug = a[1],
-                        Email = a[2],
-                    };
-                } 
-            }
-    	}
-        
-        class FSComment
-        {
-            [JsonProperty("id")]
-            public int Id { get; set; }
-            [JsonProperty("author-name")]
-            public string AuthorName { get; set; }
-            [JsonProperty("author-email")]
-            public string AuthorEmail { get; set; }
-            [JsonProperty("author-url")]
-            public string AuthorUrl { get; set; }
-            [JsonProperty("date")]
-            public DateTimeOffset Date { get; set; }
-            [JsonProperty("Content")]
-            public string Content { get; set; }
-            [JsonProperty("parent-id")]
-            public int ParentId { get; set; }
-        
-            [JsonIgnore]
-            public CommentAuthor Author
-            {
-                get 
-                {
-                    return new CommentAuthor
-                    {
-                        Name = AuthorName,
-                        Email = AuthorEmail,
-                        Url = AuthorUrl,
-                    };
-                }
-            }
+            return new FileSystemPostRepository(path);
         }
     }
 }

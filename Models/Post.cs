@@ -28,17 +28,9 @@ namespace Hawk
     
     public class Comment
     {
-        public int Id { get; set; }
         public CommentAuthor Author { get; set; }
         public DateTimeOffset Date { get; set; }
         public string Content { get; set; }
-    }
-
-    public class DasBlogCompat
-    {
-        public Guid EntryId { get; set; }
-        public string Slug { get; set; }
-        public string UniqueSlug { get; set; }
     }
 
     public class PostAuthor
@@ -58,7 +50,7 @@ namespace Hawk
         public IList<Category> Categories { get; set; }
         public IList<Category> Tags { get; set; }
         public PostAuthor Author { get; set; }
-
+        
         public int CommentCount { get; set; }
 
         public Func<Task<string>> Content { get; set; }

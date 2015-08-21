@@ -23,9 +23,9 @@ namespace Hawk
 
 	public class DasBlogRedirector
 	{
-	    RequestDelegate _next;
-	
-	    public DasBlogRedirector(RequestDelegate next)
+        readonly RequestDelegate _next;
+
+        public DasBlogRedirector(RequestDelegate next)
 	    {
 	        _next = next;
 	    }
@@ -142,7 +142,7 @@ namespace Hawk
 		{
 			if (repo == null)
 			{
-				throw new ArgumentNullException("repo");
+				throw new ArgumentNullException(nameof(repo));
 			}
 
             Redirector defaultaspx = (path, query) => 

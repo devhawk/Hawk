@@ -6,8 +6,8 @@ namespace Hawk
 {
     public class CategoryListViewComponent : ViewComponent
     {
-        private readonly IPostRepository _repo;
-        
+        readonly IPostRepository _repo;
+
         public CategoryListViewComponent(IPostRepository repo)
         {
             if (repo == null)

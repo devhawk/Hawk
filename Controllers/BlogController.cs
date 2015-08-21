@@ -14,9 +14,9 @@ namespace Hawk
     {
         const int PAGE_SIZE = 5;
 
-        private readonly IPostRepository _repo;
-        private readonly ILogger _logger;
-        
+        readonly IPostRepository _repo;
+        readonly ILogger _logger;
+
         public BlogController(IPostRepository repo, ILoggerFactory loggerFactory)
         {
             if (repo == null)
@@ -33,19 +33,19 @@ namespace Hawk
             this._logger = loggerFactory.CreateLogger(nameof(BlogController));
         }
         
-        private void Log([CallerMemberName] string methodName = null)
+        void Log([CallerMemberName] string methodName = null)
         {
             _logger.LogInformation(methodName);
         }
 
-        private RouteValueDictionary GetRouteValues(int pageNum, object routeValues = null)
+        RouteValueDictionary GetRouteValues(int pageNum, object routeValues = null)
         {
             var routeValueDict = new RouteValueDictionary(routeValues);
             routeValueDict.Add("pageNum", pageNum);
             return routeValueDict;            
         }
         
-        private IActionResult PostsHelper(IEnumerable<Post> posts, int pageNum, string action, object routeValues = null)
+        IActionResult PostsHelper(IEnumerable<Post> posts, int pageNum, string action, object routeValues = null)
         {
             // if the user asks for a page less than or equal to zero, redirect to the first page
             if (pageNum <= 0)
@@ -115,7 +115,7 @@ namespace Hawk
             
             ViewBag.Title = $"Posts from ({year})";
             ViewBag.PageHeader = $"Posts from {year}"; 
-            return PostsHelper(_repo.Posts().Where(p => p.Date.Year == year), pageNum, "PostsByYear", new { year = year });
+            return PostsHelper(_repo.Posts().Where(p => p.Date.Year == year), pageNum, "PostsByYear", new { year });
         }
 
         [Route("{year:int}/{month:range(1,12)}")]
@@ -135,7 +135,7 @@ namespace Hawk
 
             return PostsHelper(
                 _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month), 
-                pageNum, "PostsByMonth", new { year = year, month = month });
+                pageNum, "PostsByMonth", new { year, month });
         }
 
         [Route("{year:int}/{month:range(1,12)}/{day:range(1,31)}")]
@@ -155,7 +155,7 @@ namespace Hawk
 
             return PostsHelper(
                 _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day), 
-                pageNum, "PostsByMonth", new { year = year, month = month, day = day });
+                pageNum, "PostsByMonth", new { year, month, day });
         }
         
         string GeneratePostUrl(Post post)
@@ -168,7 +168,7 @@ namespace Hawk
         {
             Log();
             
-            var post = _repo.Posts().Where(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day && p.Slug == slug).FirstOrDefault();
+            var post = _repo.Posts().FirstOrDefault(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day && p.Slug == slug);
             if (post == null)            
             {
                 return HttpNotFound();
@@ -182,13 +182,13 @@ namespace Hawk
         public IActionResult SlugPost(string slug)
         {
             Log();
-            var post = _repo.Posts().Where(p => p.Slug == slug).FirstOrDefault();
+            var post = _repo.Posts().FirstOrDefault(p => p.Slug == slug);
             if (post == null)
             {
                 return HttpNotFound();
             }
             
-            return RedirectToAction("Post", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug = slug } );
+            return RedirectToAction("Post", new { year = post.Date.Year, month = post.Date.Month, day = post.Date.Day, slug } );
         }
         
         [Route("category/{name}")]
@@ -212,7 +212,7 @@ namespace Hawk
              
             return PostsHelper(
                 _repo.Posts().Where(p => p.Categories.Any(c => c.Slug == name)), 
-                pageNum, "Category", new { name = name });
+                pageNum, "Category", new { name });
         }
         
         [Route("tag/{name}")]
@@ -235,7 +235,7 @@ namespace Hawk
              
             return PostsHelper(
                 _repo.Posts().Where(p => p.Tags.Any(c => c.Slug == name)), 
-                pageNum, "Tag", new { name = name });
+                pageNum, "Tag", new { name });
         }
         
         [Route("author/{slug}")]
@@ -258,7 +258,7 @@ namespace Hawk
 
             return PostsHelper(
                 _repo.Posts().Where(p => p.Author.Slug == slug), 
-                pageNum, "Author", new { slug = slug });
+                pageNum, "Author", new { slug });
         }
 	}
 }

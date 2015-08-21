@@ -82,7 +82,7 @@ namespace Hawk
 
         static async Task<string> GetContent(CloudBlobContainer contentContainer, string key)
         {
-            var htmlBlobRef = contentContainer.GetBlockBlobReference(key + "/content.html");
+            var htmlBlobRef = contentContainer.GetBlockBlobReference(key + "/rendered-content.html");
             
             string text;
             using (var memoryStream = new System.IO.MemoryStream())
@@ -102,7 +102,7 @@ namespace Hawk
             return EnumerateTableQuery(commentsTable, query)
                 .Select(dte => new Comment
                     {
-                        Id = dte.Properties["Id"].Int32Value.Value,
+                        //  Id = dte.Properties["Id"].Int32Value.Value,
                         Content = dte.Properties["Content"].StringValue,
                         Date = dte.Properties["Date"].DateTimeOffsetValue.Value,
                         Author = new CommentAuthor
@@ -139,45 +139,51 @@ namespace Hawk
             };
         }
         
-        AzurePostRepository(IEnumerable<DynamicTableEntity> entities, CloudStorageAccount storageAccount)
+        AzurePostRepository(CloudStorageAccount storageAccount)
         {
             _cache = new MemoryCache(new MemoryCacheOptions());
-            var tempPosts = new List<Post>();
-        
+
             var blobClient = storageAccount.CreateCloudBlobClient();
-            var contentContainer = blobClient.GetContainerReference("blog-content");
             var tableClient = storageAccount.CreateCloudTableClient();
+
+            var contentContainer = blobClient.GetContainerReference("blog-content");
+            var postsTable = tableClient.GetTableReference("blogPosts");
             var commentsTable = tableClient.GetTableReference("blogComments");
 
-            foreach (var entity in entities)
+            var query = new TableQuery<DynamicTableEntity>();
+            var azPosts = EnumerateTableQuery(postsTable, query);
+            
+            var tempPosts = new List<Post>();
+
+            foreach (var azPost in azPosts)
             {
                 var post = new Post()
                 {
-                    Slug = entity.Properties["Slug"].StringValue,
-                    Title = System.Net.WebUtility.HtmlDecode(entity.Properties["Title"].StringValue),
-                    Date = entity.Properties["Date"].DateTimeOffsetValue.Value,
-                    DateModified = entity.Properties["Modified"].DateTimeOffsetValue.Value,
-                    Categories = ConvertCategories(entity.Properties["CsvCategorySlugs"].StringValue).ToList(),
-                    Tags = ConvertCategories(entity.Properties["CsvTagSlugs"].StringValue).ToList(),
-                    Author = ConvertAuthor(entity.Properties["Author"].StringValue),
-                    CommentCount = entity.Properties["CommentCount"].Int32Value.Value,
-                    Content = () => _cache.AsyncMemoize(entity.PartitionKey, key => GetContent(contentContainer, key)), 
-                    Comments = () => GetComments(commentsTable, entity.PartitionKey),
+                    Slug = azPost.Properties["Slug"].StringValue,
+                    Title = System.Net.WebUtility.HtmlDecode(azPost.Properties["Title"].StringValue),
+                    Date = azPost.Properties["Date"].DateTimeOffsetValue.Value,
+                    DateModified = azPost.Properties["Modified"].DateTimeOffsetValue.Value,
+                    Categories = ConvertCategories(azPost.Properties["Categories"].StringValue).ToList(),
+                    Tags = ConvertCategories(azPost.Properties["Tags"].StringValue).ToList(),
+                    Author = ConvertAuthor(azPost.Properties["Author"].StringValue),
+                    CommentCount = azPost.Properties["CommentCount"].Int32Value.Value,
+                    Content = () => _cache.AsyncMemoize(azPost.PartitionKey, key => GetContent(contentContainer, key)), 
+                    Comments = () => GetComments(commentsTable, azPost.PartitionKey),
                 };
 
                 tempPosts.Add(post);
                                     
-                if (entity.Properties.ContainsKey("DasBlogEntryId"))
+                if (azPost.Properties.ContainsKey("DasBlogEntryId"))
                 {
-                    _indexDasBlogEntryId[entity.Properties["DasBlogEntryId"].GuidValue.Value] = post;
+                    _indexDasBlogEntryId[azPost.Properties["DasBlogEntryId"].GuidValue.Value] = post;
                 }
-                if (entity.Properties.ContainsKey("DasBlogTitle"))
+                if (azPost.Properties.ContainsKey("DasBlogTitle"))
                 {
-                    _indexDasBlogTitle[entity.Properties["DasBlogTitle"].StringValue.ToLower()] = post;
+                    _indexDasBlogTitle[azPost.Properties["DasBlogTitle"].StringValue.ToLower()] = post;
                 }
-                if (entity.Properties.ContainsKey("DasBlogUniqueTitle"))
+                if (azPost.Properties.ContainsKey("DasBlogUniqueTitle"))
                 {
-                    _indexDasBlogTitle[entity.Properties["DasBlogUniqueTitle"].StringValue.ToLower()] = post;
+                    _indexDasBlogTitle[azPost.Properties["DasBlogUniqueTitle"].StringValue.ToLower()] = post;
                 }
             }
             
@@ -198,11 +204,7 @@ namespace Hawk
         
         public static IPostRepository GetRepository(CloudStorageAccount storageAccount)
         {
-            var tableClient = storageAccount.CreateCloudTableClient();
-            var entriesTable = tableClient.GetTableReference("blogEntries");
-            var query = new TableQuery<DynamicTableEntity>();
-            
-            return new AzurePostRepository(EnumerateTableQuery(entriesTable, query), storageAccount);
+            return new AzurePostRepository(storageAccount);
         }
     }
 }

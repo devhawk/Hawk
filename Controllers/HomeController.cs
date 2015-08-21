@@ -9,9 +9,9 @@ namespace Hawk
     {
         const int PAGE_SIZE = 5;
 
-        private readonly IPostRepository _repo;
-        private readonly ILogger _logger;
-        
+        readonly IPostRepository _repo;
+        readonly ILogger _logger;
+
         public HomeController(IPostRepository repo, ILoggerFactory loggerFactory)
         {
             if (repo == null)

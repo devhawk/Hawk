@@ -11,7 +11,7 @@ namespace Hawk
 {
     class TextWriterResult : IActionResult
     {
-        Func<TextWriter, Task> _func;
+        readonly Func<TextWriter, Task> _func;
         public TextWriterResult(string contentType, Func<TextWriter, Task> func)
         {
             ContentType = contentType;
@@ -36,8 +36,8 @@ namespace Hawk
     {
         static readonly Uri ROOT_URL = new Uri("http://localhost:5000");
 
-        private readonly IPostRepository _repo;
-        private readonly TelemetryClient _telemetryClient;
+        readonly IPostRepository _repo;
+        readonly TelemetryClient _telemetryClient;
 
         public FeedController(IPostRepository repo, TelemetryClient telemetryClient)
         {

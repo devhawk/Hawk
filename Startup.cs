@@ -17,13 +17,13 @@ namespace Hawk
         {
             // Setup configuration sources.
             var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
-                .AddJsonFile("config.json", optional: true)
-                .AddJsonFile($"config.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile("config.json", true)
+                .AddJsonFile($"config.{env.EnvironmentName}.json", true);
                 
             builder.AddUserSecrets();
             if (env.IsDevelopment())
             {
-                builder.AddApplicationInsightsSettings(developerMode: true);
+                builder.AddApplicationInsightsSettings(true);
             }
                 
             builder.AddEnvironmentVariables();
@@ -47,13 +47,17 @@ namespace Hawk
                 var accountName = Configuration.Get("storage:AccountName");
                 var accountKey  = Configuration.Get("storage:AccountKey"); 
                 
-                if (accountName == null || accountKey == null)
+                Azure.CloudStorageAccount account;
+                if (accountName != null && accountKey != null)
                 {
-                    throw new Exception("Azure Storage info not property configured");
+                    var creds = new Azure.Auth.StorageCredentials(accountName, accountKey);
+                    account = new Azure.CloudStorageAccount(creds, false);
+                }
+                else
+                {
+                    account = Azure.CloudStorageAccount.DevelopmentStorageAccount;
                 }
                 
-                var creds = new Azure.Auth.StorageCredentials(accountName, accountKey);
-                var account = new Azure.CloudStorageAccount(creds, false);
                 services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
             } 
             // but also support using the file system

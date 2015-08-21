@@ -13,9 +13,9 @@ namespace Hawk
 {
 	public class NotFoundMiddleware
 	{
-	    RequestDelegate _next;
-	
-	    public NotFoundMiddleware(RequestDelegate next)
+        readonly RequestDelegate _next;
+
+        public NotFoundMiddleware(RequestDelegate next)
 	    {
 	        _next = next;
 	    }

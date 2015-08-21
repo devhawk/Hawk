@@ -6,8 +6,8 @@ namespace Hawk
 {
     public class TagCloudViewComponent : ViewComponent
     {
-        private readonly IPostRepository _repo;
-        
+        readonly IPostRepository _repo;
+
         public TagCloudViewComponent(IPostRepository repo)
         {
             if (repo == null)
