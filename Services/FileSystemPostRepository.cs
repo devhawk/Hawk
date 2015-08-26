@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.Logging;
 
 namespace Hawk
 {    
@@ -15,17 +16,20 @@ namespace Hawk
         const string COMMENTS_JSON = "hawk-comments.json";
         const string DASBLOG_COMPAT_JSON = "hawk-dasblog-compat.json";
         const string ITEM_CONTENT = "rendered-content.html";
-        
+
+        readonly string _path;
+        ILogger _logger;
+
         Post[] _posts;
         Tuple<Category, int>[] _tags;
         Tuple<Category, int>[] _categories;
-        IMemoryCache _cache;
-        Dictionary<Guid, Post> _indexDasBlogEntryId = new Dictionary<Guid, Post>();
-        Dictionary<string, Post> _indexDasBlogTitle = new Dictionary<string, Post>();
-        
+        readonly IMemoryCache _cache;
+        readonly Dictionary<Guid, Post> _indexDasBlogEntryId = new Dictionary<Guid, Post>();
+        readonly Dictionary<string, Post> _indexDasBlogTitle = new Dictionary<string, Post>();
+
         public IEnumerable<Post> Posts() 
         {
-             return _posts; 
+            return _posts; 
         }
         
         public IEnumerable<Tuple<Category, int>> Tags()
@@ -92,20 +96,28 @@ namespace Hawk
             };
         }
 
-        FileSystemPostRepository(string path)
+        public FileSystemPostRepository(string path)
         {
+            _path = path;
+            _cache = new MemoryCache(new MemoryCacheOptions());
+        }
+
+        public Task InitializeAsync(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger(nameof(FileSystemPostRepository));
+            _logger.LogInformation($"Loading data from from {_path}");
+
             var fsPosts = Directory
-                .EnumerateDirectories(path)
+                .EnumerateDirectories(_path)
                 .Where(dir => File.Exists(Path.Combine(dir, ITEM_JSON)))
                 .Select(dir => new
                     {
                         Directory = dir,
                         Post = JObject.Parse(File.ReadAllText(Path.Combine(dir, ITEM_JSON))),
                     });
-            
-            _cache = new MemoryCache(new MemoryCacheOptions());
+        
             var tempPosts = new List<Post>();
-            
+                
             foreach (var fsPost in fsPosts)
             {
                 var post = new Post()
@@ -118,51 +130,48 @@ namespace Hawk
                     Tags = ConvertCsvCatString((string)fsPost.Post["csv-tag-slugs"]).ToList(),
                     Author = ConvertPostAuthor((string)fsPost.Post["author"]),
                     CommentCount = int.Parse((string)fsPost.Post["comment-count"]),
-                    
+                        
                     Content = () => _cache.AsyncMemoize(Path.Combine(fsPost.Directory, ITEM_CONTENT), key => Task.Run(() => File.ReadAllText(key))),
-                    Comments = () => _cache.Memoize(Path.Combine(fsPost.Directory, COMMENTS_JSON), key => JArray
+                    Comments = () => _cache.AsyncMemoize(Path.Combine(fsPost.Directory, COMMENTS_JSON), key => Task.Run(() => JArray
                         .Parse(File.ReadAllText(key))
                         .Select(fsc => new Comment
                             {
                                 Content = (string)fsc["content"],
                                 Date = DateTimeOffset.Parse((string)fsc["date"]),
                                 Author = ConvertCommentAuthor(fsc), 
-                            })),
+                            }))),
                 };
-
+    
                 tempPosts.Add(post);
-
+    
                 Guid? dasBlogEntryId = fsPost.Post["dasblog-entry-id"] != null ? Guid.Parse((string)fsPost.Post["dasblog-entry-id"]) : (Guid?)null;
-
+    
                 if (dasBlogEntryId.HasValue)
                 {
                     string dasBlogSlug = (string)fsPost.Post["dasblog-title"] ?? null;
                     string dasBlogUniqueSlug = (string)fsPost.Post["dasblog-unique-title"] ?? null;
-
+    
                     _indexDasBlogEntryId[dasBlogEntryId.Value] = post;
                     _indexDasBlogTitle[dasBlogSlug.ToLower()] = post;
                     _indexDasBlogTitle[dasBlogUniqueSlug.ToLower()] = post;                    
                 }
             }
-
+    
             _posts = tempPosts.OrderByDescending(p => p.Date).ToArray();
-            
+                
             _tags = _posts
                 .SelectMany(p => p.Tags)
                 .GroupBy(c => c.Slug)
                 .Select(g => Tuple.Create(g.First(), g.Count()))
                 .ToArray();
-                
+                    
             _categories = _posts
                 .SelectMany(p => p.Categories)
                 .GroupBy(c => c.Slug)
                 .Select(g => Tuple.Create(g.First(), g.Count()))
                 .ToArray();
-        }
-        
-        public static IPostRepository GetRepository(string path)
-        {
-            return new FileSystemPostRepository(path);
+            
+            return Task.Delay(0);    
         }
     }
 }

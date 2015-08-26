@@ -8,6 +8,7 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Azure = Microsoft.WindowsAzure.Storage;
+using System.Threading.Tasks;
 
 namespace Hawk
 {
@@ -40,6 +41,15 @@ namespace Hawk
             services.AddApplicationInsightsTelemetry(Configuration);
             
             var postRepo = Configuration.Get("PostRepostitory");
+
+            // this code feels a little smelly. 
+            //   * Should I be injecting singletons by type instead of instances? 
+            //      * If so, how do I access the configuration object
+            //   * Should I be using transient objects instead of single instances?
+            //      * The metadata for all my posts is about 2/3 a MB encoded as JSON. So keeping it all in memory seems like the right choice.
+            //      * should I be using the memory cache object? Currently, all the metadata is stored in fields inside the single repo object
+            //      * Still need to figure out how I'm going to detect changes. I'm thinking of adding a webhook of some sort that I will 
+            //        integrate into my authoring tools (once I build those)
             
             // default to using Azure
             if (string.IsNullOrEmpty(postRepo) || string.Equals(postRepo, "Azure", StringComparison.OrdinalIgnoreCase))
@@ -48,17 +58,19 @@ namespace Hawk
                 var accountKey  = Configuration.Get("storage:AccountKey"); 
                 
                 Azure.CloudStorageAccount account;
-                if (accountName != null && accountKey != null)
+                if (accountName == null || accountKey == null)
+                {
+                    // if both account name and key aren't specified, use the development account
+                    // TODO : only support DevStorage when env isDevelopment
+                    account = Azure.CloudStorageAccount.DevelopmentStorageAccount;
+                }
+                else
                 {
                     var creds = new Azure.Auth.StorageCredentials(accountName, accountKey);
                     account = new Azure.CloudStorageAccount(creds, false);
                 }
-                else
-                {
-                    account = Azure.CloudStorageAccount.DevelopmentStorageAccount;
-                }
-                
-                services.AddInstance<IPostRepository>(AzurePostRepository.GetRepository(account));
+
+                services.AddInstance<IPostRepository>(new AzurePostRepository(account));
             } 
             // but also support using the file system
             else if (string.Equals(postRepo, "FileSystem", StringComparison.OrdinalIgnoreCase))
@@ -69,29 +81,21 @@ namespace Hawk
                     throw new Exception("FileSystem Storage path not property configured");
                 }
 
-                services.AddInstance<IPostRepository>(FileSystemPostRepository.GetRepository(path));
+                services.AddInstance<IPostRepository>(new FileSystemPostRepository(path));
             }  
             else {
                 throw new Exception($"Invalid PostRepository specified ({postRepo})");
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IPostRepository repo)
         {
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
             
             var logger = loggerFactory.CreateLogger(nameof(Startup));
-            
-            string postRepo;
-            if (Configuration.TryGet("PostRepostitory", out postRepo))
-            {
-                logger.LogInformation($"Using {postRepo} Post Repository.");    
-            }
-            else 
-            {
-                logger.LogInformation($"Using Azure Post Repository by default.");    
-            }
+
+            repo.InitializeAsync(loggerFactory).Wait();
             
             app.UseApplicationInsightsRequestTelemetry();
             

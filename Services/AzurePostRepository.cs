@@ -2,25 +2,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Reactive.Linq;
 
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Framework.Logging;
 
 namespace Hawk
 {
 	class AzurePostRepository : IPostRepository
     {
         const string ITEM_CONTENT = "content.html";
-        
+        readonly CloudStorageAccount _storageAccount;
+
         Post[] _posts;
         Tuple<Category, int>[] _tags;
         Tuple<Category, int>[] _categories;
-        IMemoryCache _cache;
-        Dictionary<Guid, Post> _indexDasBlogEntryId = new Dictionary<Guid, Post>();
-        Dictionary<string, Post> _indexDasBlogTitle = new Dictionary<string, Post>();
+        readonly IMemoryCache _contentCache;
+        readonly IMemoryCache _commentCache;
+        readonly Dictionary<Guid, Post> _indexDasBlogEntryId = new Dictionary<Guid, Post>();
+        readonly Dictionary<string, Post> _indexDasBlogTitle = new Dictionary<string, Post>();
 
         public IEnumerable<Post> Posts() 
         {
@@ -54,32 +56,6 @@ namespace Hawk
             return PostByDasBlogTitle(key);
         }
         
-        static IObservable<T> ObserveTableQuery<T>(CloudTable table, TableQuery<T> query) where T : ITableEntity, new()
-        {
-            return Observable.Create<T>(
-                async obs =>
-                {
-                    var token = new TableContinuationToken();
-                    do
-                    {
-                        var segment = await table.ExecuteQuerySegmentedAsync<T>(query, token);
-
-                        foreach (var entry in segment)
-                        {
-                            obs.OnNext(entry);
-                        }
-
-                        token = segment.ContinuationToken;
-                    }
-                    while (token != null);
-                });
-        }
-
-        static IEnumerable<T> EnumerateTableQuery<T>(CloudTable table, TableQuery<T> query) where T : ITableEntity, new()
-        {
-            return ObserveTableQuery(table, query).ToEnumerable();
-        }
-
         static async Task<string> GetContent(CloudBlobContainer contentContainer, string key)
         {
             var htmlBlobRef = contentContainer.GetBlockBlobReference(key + "/rendered-content.html");
@@ -94,15 +70,20 @@ namespace Hawk
             return text;
         }
         
-        static IEnumerable<Comment> GetComments(CloudTable commentsTable, string key)
+        static async Task<IEnumerable<Comment>> GetComments(CloudTable commentsTable, string key)
         {
+            var comments = new List<Comment>();
             var query = new TableQuery<DynamicTableEntity>()
                 .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, key));
             
-            return EnumerateTableQuery(commentsTable, query)
-                .Select(dte => new Comment
+            var token = new TableContinuationToken();
+            do
+            {
+                var segment = await commentsTable.ExecuteQuerySegmentedAsync(query, token);
+                foreach (var dte in segment)
+                {
+                    comments.Add(new Comment
                     {
-                        //  Id = dte.Properties["Id"].Int32Value.Value,
                         Content = dte.Properties["Content"].StringValue,
                         Date = dte.Properties["Date"].DateTimeOffsetValue.Value,
                         Author = new CommentAuthor
@@ -111,8 +92,14 @@ namespace Hawk
                             Email = dte.Properties["AuthorEmail"].StringValue,
                             Url = dte.Properties["AuthorUrl"].StringValue,
                         },
-                    })
-                .ToArray();
+                    });
+                }
+
+                token = segment.ContinuationToken;
+            }
+            while (token != null);
+            
+            return comments;
         }
         
         static IEnumerable<Category> ConvertCategories(string text)
@@ -139,54 +126,69 @@ namespace Hawk
             };
         }
         
-        AzurePostRepository(CloudStorageAccount storageAccount)
+        public AzurePostRepository(CloudStorageAccount storageAccount)
         {
-            _cache = new MemoryCache(new MemoryCacheOptions());
+            _storageAccount = storageAccount;
+            _contentCache = new MemoryCache(new MemoryCacheOptions());
+            _commentCache = new MemoryCache(new MemoryCacheOptions());
+        }
 
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            var tableClient = storageAccount.CreateCloudTableClient();
+        public async Task InitializeAsync(ILoggerFactory loggerFactory)
+        {
+            var logger = loggerFactory.CreateLogger(nameof(FileSystemPostRepository));
+            logger.LogInformation($"Loading data from from {_storageAccount.Credentials.AccountName}");
+
+            var blobClient = _storageAccount.CreateCloudBlobClient();
+            var tableClient = _storageAccount.CreateCloudTableClient();
 
             var contentContainer = blobClient.GetContainerReference("blog-content");
             var postsTable = tableClient.GetTableReference("blogPosts");
             var commentsTable = tableClient.GetTableReference("blogComments");
 
-            var query = new TableQuery<DynamicTableEntity>();
-            var azPosts = EnumerateTableQuery(postsTable, query);
-            
             var tempPosts = new List<Post>();
 
-            foreach (var azPost in azPosts)
+            var query = new TableQuery<DynamicTableEntity>();
+            var token = new TableContinuationToken();
+            do
             {
-                var post = new Post()
-                {
-                    Slug = azPost.Properties["Slug"].StringValue,
-                    Title = System.Net.WebUtility.HtmlDecode(azPost.Properties["Title"].StringValue),
-                    Date = azPost.Properties["Date"].DateTimeOffsetValue.Value,
-                    DateModified = azPost.Properties["Modified"].DateTimeOffsetValue.Value,
-                    Categories = ConvertCategories(azPost.Properties["Categories"].StringValue).ToList(),
-                    Tags = ConvertCategories(azPost.Properties["Tags"].StringValue).ToList(),
-                    Author = ConvertAuthor(azPost.Properties["Author"].StringValue),
-                    CommentCount = azPost.Properties["CommentCount"].Int32Value.Value,
-                    Content = () => _cache.AsyncMemoize(azPost.PartitionKey, key => GetContent(contentContainer, key)), 
-                    Comments = () => GetComments(commentsTable, azPost.PartitionKey),
-                };
+                var segment = await postsTable.ExecuteQuerySegmentedAsync(query, token);
 
-                tempPosts.Add(post);
-                                    
-                if (azPost.Properties.ContainsKey("DasBlogEntryId"))
+                foreach (var azPost in segment)
                 {
-                    _indexDasBlogEntryId[azPost.Properties["DasBlogEntryId"].GuidValue.Value] = post;
+                    var post = new Post()
+                    {
+                        Slug = azPost.Properties["Slug"].StringValue,
+                        Title = System.Net.WebUtility.HtmlDecode(azPost.Properties["Title"].StringValue),
+                        Date = azPost.Properties["Date"].DateTimeOffsetValue.Value,
+                        DateModified = azPost.Properties["Modified"].DateTimeOffsetValue.Value,
+                        Categories = ConvertCategories(azPost.Properties["Categories"].StringValue).ToList(),
+                        Tags = ConvertCategories(azPost.Properties["Tags"].StringValue).ToList(),
+                        Author = ConvertAuthor(azPost.Properties["Author"].StringValue),
+                        CommentCount = azPost.Properties["CommentCount"].Int32Value.Value,
+                        Content = () => _contentCache.AsyncMemoize(azPost.PartitionKey, key => GetContent(contentContainer, key)), 
+                        Comments = () => _commentCache.AsyncMemoize(azPost.PartitionKey, key => GetComments(commentsTable, key)), 
+                    };
+    
+                    tempPosts.Add(post);
+                                        
+                    if (azPost.Properties.ContainsKey("DasBlogEntryId"))
+                    {
+                        _indexDasBlogEntryId[azPost.Properties["DasBlogEntryId"].GuidValue.Value] = post;
+                    }
+                    if (azPost.Properties.ContainsKey("DasBlogTitle"))
+                    {
+                        _indexDasBlogTitle[azPost.Properties["DasBlogTitle"].StringValue.ToLower()] = post;
+                    }
+                    if (azPost.Properties.ContainsKey("DasBlogUniqueTitle"))
+                    {
+                        _indexDasBlogTitle[azPost.Properties["DasBlogUniqueTitle"].StringValue.ToLower()] = post;
+                    }
                 }
-                if (azPost.Properties.ContainsKey("DasBlogTitle"))
-                {
-                    _indexDasBlogTitle[azPost.Properties["DasBlogTitle"].StringValue.ToLower()] = post;
-                }
-                if (azPost.Properties.ContainsKey("DasBlogUniqueTitle"))
-                {
-                    _indexDasBlogTitle[azPost.Properties["DasBlogUniqueTitle"].StringValue.ToLower()] = post;
-                }
+
+                token = segment.ContinuationToken;
             }
-            
+            while (token != null);
+
             _posts = tempPosts.OrderByDescending(p => p.Date).ToArray();
             
             _tags = _posts
@@ -200,11 +202,6 @@ namespace Hawk
                 .GroupBy(c => c.Slug)
                 .Select(g => Tuple.Create(g.First(), g.Count()))
                 .ToArray();
-        }
-        
-        public static IPostRepository GetRepository(CloudStorageAccount storageAccount)
-        {
-            return new AzurePostRepository(storageAccount);
         }
     }
 }

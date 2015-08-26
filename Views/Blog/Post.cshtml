@@ -38,7 +38,7 @@
 {
     <div class="blog-comments"><a name="comments"></a>
         <h3 class="blog-comments-header">Comments:</h3>
-        @foreach (var comment in Model.Comments())
+        @foreach (var comment in await Model.Comments())
         {
             <div class="blog-comment">
                 <div class="blog-comment-content">@Html.Raw(comment.Content)</div>
