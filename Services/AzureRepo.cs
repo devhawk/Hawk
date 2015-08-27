@@ -95,20 +95,5 @@ namespace Hawk
             var results = await GetResults(postsTable, query);
             return results.Select(r => ConvertPost(r, contentContainer, commentsTable));
         }
-
-        // TODO: figure out how to integrate async operations into startup.Configure correctly
-        public static IEnumerable<Post> LoadFromAzure(CloudStorageAccount storageAccount)
-        {
-            var loadTask = LoadFromAzureAsync(storageAccount);
-
-            loadTask.Wait();
-
-            if (loadTask.IsFaulted)
-            {
-                throw loadTask.Exception;
-            }
-
-            return loadTask.Result;
-        }
     }
 }

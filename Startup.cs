@@ -24,15 +24,15 @@ namespace Hawk
             var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
                 .AddJsonFile("config.json", true)
                 .AddJsonFile($"config.{env.EnvironmentName}.json", true);
-                
+
             builder.AddUserSecrets();
             if (env.IsDevelopment())
             {
                 builder.AddApplicationInsightsSettings(true);
             }
-                
+
             builder.AddEnvironmentVariables();
-            
+
             Configuration = builder.Build();
         }
 
@@ -52,7 +52,7 @@ namespace Hawk
         {
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
-            
+
             var logger = loggerFactory.CreateLogger(nameof(Startup));
 
             // TODO: drive data load from config. 
@@ -61,17 +61,18 @@ namespace Hawk
             // temp: syncronously load blog data from file system
             //logger.LogInformation("Loading posts from {path}", path);
             //var path = Configuration.Get("storage:FileSystemPath");
-            //var posts = LoadPostsFromFileSystem(path);
+            //MemoryCachePostRepository.UpdateCache(cache, LoadPostsFromFileSystem(path));
 
             // temp: syncronously load blog data from Azure dev storage
             logger.LogInformation("Loading posts from Azure development storage");
-            var posts = AzureRepo.LoadFromAzure(Azure.CloudStorageAccount.DevelopmentStorageAccount);
-            MemoryCachePostRepository.UpdateCache(cache, posts);
+            var loadTask = AzureRepo.LoadFromAzureAsync(Azure.CloudStorageAccount.DevelopmentStorageAccount);
+            loadTask.Wait();
+            MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
 
             #endregion
 
             app.UseApplicationInsightsRequestTelemetry();
-            
+
             // Use the error page only in development environment.
             if (env.IsDevelopment())
             {
@@ -84,7 +85,7 @@ namespace Hawk
             }
 
             app.UseApplicationInsightsExceptionTelemetry();
-            
+
             app.UseMiddleware<DasBlogRedirector>();
             app.UseMiddleware<NotFoundMiddleware>();
             app.UseStaticFiles(new StaticFileOptions() { ServeUnknownFileTypes = env.IsDevelopment() });
