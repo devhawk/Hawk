@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-
+using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -11,7 +9,7 @@ using Microsoft.Framework.Logging;
 
 namespace Hawk
 {
-	public class NotFoundMiddleware
+    public class NotFoundMiddleware
 	{
         readonly RequestDelegate _next;
 

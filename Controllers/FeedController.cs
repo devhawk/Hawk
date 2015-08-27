@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.AspNet.Mvc;
 using Microsoft.ApplicationInsights;
+using Microsoft.AspNet.Mvc;
 
 namespace Hawk
 {

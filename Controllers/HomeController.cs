@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using Microsoft.Framework.Logging;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.Logging;
 
 namespace Hawk
 {
