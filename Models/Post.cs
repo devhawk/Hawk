@@ -23,5 +23,14 @@ namespace Hawk.Models
 
         public Func<Task<string>> Content { get; set; }
         public Func<Task<IEnumerable<Comment>>> Comments { get; set; }
+
+        public string UniqueKey
+        {
+            get
+            {
+                return Date.ToString("yyyyMMdd-HHmm-") + Slug;
+            }
+        }
+
     }
 }

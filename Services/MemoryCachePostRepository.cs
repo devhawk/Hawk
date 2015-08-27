@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.Caching.Memory;
 using Hawk.Models;
+using System.Threading.Tasks;
 
 namespace Hawk.Services
 {
@@ -19,8 +20,8 @@ namespace Hawk.Services
         Tuple<Category, int>[] _tags;
         Tuple<Category, int>[] _categories;
         Dictionary<Guid, Post> _indexDasBlogEntryId;
-        ILookup<string, Post> _indexDasBlogTitle;
-        ILookup<string, Post> _indexDasBlogUniqueTitle;
+        Dictionary<string, Post> _indexDasBlogTitle;
+        Dictionary<string, Post> _indexDasBlogUniqueTitle;
 
         public MemoryCachePostRepository(IMemoryCache cache)
         {
@@ -28,13 +29,35 @@ namespace Hawk.Services
             _tags = cache.Get<Tuple<Category, int>[]>(TAGS);
             _categories = cache.Get<Tuple<Category, int>[]>(CATEGORIES);
             _indexDasBlogEntryId = cache.Get<Dictionary<Guid, Post>>(DASBLOG_ENTRYIDS);
-            _indexDasBlogTitle = cache.Get<ILookup<string, Post>>(DASBLOG_TITLES);
-            _indexDasBlogUniqueTitle = cache.Get<ILookup<string, Post>>(DASBLOG_UNIQUETITLES);
+            _indexDasBlogTitle = cache.Get<Dictionary<string, Post>>(DASBLOG_TITLES);
+            _indexDasBlogUniqueTitle = cache.Get<Dictionary<string, Post>>(DASBLOG_UNIQUETITLES);
+        }
+
+        static Func<Task<TItem>> MemoizeAsync<TItem>(IMemoryCache cache, string key, Func<Task<TItem>> func)
+        {
+            return async () =>
+            {
+                TItem item;
+                return cache.TryGetValue<TItem>(key, out item)
+                    ? item
+                    : cache.Set<TItem>(key, await func(), new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5) });
+            };
         }
 
         public static void UpdateCache(IMemoryCache cache, IEnumerable<Post> posts)
         {
-            cache.Set(POSTS, posts.OrderByDescending(p => p.Date).ToArray());
+            var postArray = posts
+                .Select(p =>
+                {
+                    // replace the Comments and Content function properties with versions that automatically cache the results
+                    p.Comments = MemoizeAsync(cache, $"MemoryCachePostRepository.Post.{p.UniqueKey}.Comments", p.Comments);
+                    p.Content = MemoizeAsync(cache, $"MemoryCachePostRepository.Post.{p.UniqueKey}.Content", p.Content);
+                    return p;
+                })
+                .OrderByDescending(p => p.Date)
+                .ToArray();
+
+            cache.Set(POSTS, postArray);
 
             cache.Set(TAGS, posts
                 .SelectMany(p => p.Tags)
@@ -52,13 +75,16 @@ namespace Hawk.Services
                 .Where(p => p.DasBlogEntryId.HasValue)
                 .ToDictionary(p => p.DasBlogEntryId.Value, p => p));
 
-            cache.Set<ILookup<string, Post>>(DASBLOG_TITLES, posts
+            var lookupDasBlogTitle = posts
                 .Where(p => !string.IsNullOrEmpty(p.DasBlogTitle))
-                .ToLookup(p => p.DasBlogTitle.ToLowerInvariant(), p => p));
+                .ToLookup(p => p.DasBlogTitle.ToLowerInvariant(), p => p);
 
-            cache.Set<ILookup<string, Post>>(DASBLOG_UNIQUETITLES, posts
+            cache.Set<Dictionary<string, Post>>(DASBLOG_TITLES, lookupDasBlogTitle
+                .ToDictionary(g => g.Key, g => g.First()));
+
+            cache.Set<Dictionary<string, Post>>(DASBLOG_UNIQUETITLES, posts
                 .Where(p => !string.IsNullOrEmpty(p.DasBlogUniqueTitle))
-                .ToLookup(p => p.DasBlogUniqueTitle.ToLowerInvariant(), p => p));
+                .ToDictionary(p => p.DasBlogUniqueTitle.ToLowerInvariant(), p => p));
         }
 
         public IEnumerable<Post> Posts()
@@ -83,13 +109,13 @@ namespace Hawk.Services
 
         public Post PostByDasBlogTitle(string title)
         {
-            return _indexDasBlogTitle[title.ToLowerInvariant()].FirstOrDefault();
+            return _indexDasBlogTitle[title.ToLowerInvariant()];
         }
 
         public Post PostByDasBlogTitle(string title, DateTimeOffset date)
         {
             var key = date.ToString("yyyy/MM/dd/") + title.ToLowerInvariant();
-            return _indexDasBlogTitle[key].FirstOrDefault();
+            return _indexDasBlogUniqueTitle[key];
         }
     }
 }

@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.StaticFiles;
@@ -11,11 +6,8 @@ using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
-using Newtonsoft.Json.Linq;
 using Hawk.Middleware;
-using Hawk.Models;
 using Hawk.Services;
-using Azure = Microsoft.WindowsAzure.Storage;
 
 namespace Hawk
 {
@@ -62,15 +54,15 @@ namespace Hawk
             #region temp data load
 
             // temp: syncronously load blog data from file system
-            //logger.LogInformation("Loading posts from {path}", path);
-            //var path = Configuration.Get("storage:FileSystemPath");
-            //MemoryCachePostRepository.UpdateCache(cache, LoadPostsFromFileSystem(path));
+            var path = Configuration.Get("storage:FileSystemPath");
+            logger.LogInformation("Loading posts from {path}", path);
+            MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.LoadPostsFromFileSystem(path));
 
             // temp: syncronously load blog data from Azure dev storage
-            logger.LogInformation("Loading posts from Azure development storage");
-            var loadTask = AzureRepo.LoadFromAzureAsync(Azure.CloudStorageAccount.DevelopmentStorageAccount);
-            loadTask.Wait();
-            MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
+            //logger.LogInformation("Loading posts from Azure development storage");
+            //var loadTask = AzureRepo.LoadFromAzureAsync(Azure.CloudStorageAccount.DevelopmentStorageAccount);
+            //loadTask.Wait();
+            //MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
 
             #endregion
 
@@ -93,56 +85,6 @@ namespace Hawk
             app.UseMiddleware<NotFoundMiddleware>();
             app.UseStaticFiles(new StaticFileOptions() { ServeUnknownFileTypes = env.IsDevelopment() });
             app.UseMvcWithDefaultRoute();
-        }
-
-        static IEnumerable<Post> LoadPostsFromFileSystem(string path)
-        {
-            const string ITEM_JSON = "hawk-post.json";
-            const string COMMENTS_JSON = "hawk-comments.json";
-            const string ITEM_CONTENT = "rendered-content.html";
-
-            var fsPosts = Directory
-                .EnumerateDirectories(path)
-                .Where(dir => File.Exists(Path.Combine(dir, ITEM_JSON)))
-                .Select(dir => new
-                {
-                    Directory = dir,
-                    Post = JObject.Parse(File.ReadAllText(Path.Combine(dir, ITEM_JSON))),
-                });
-
-            foreach (var fsPost in fsPosts)
-            {
-                yield return new Post()
-                {
-                    Slug = (string)fsPost.Post["slug"],
-                    Title = System.Net.WebUtility.HtmlDecode((string)fsPost.Post["title"]),
-                    Date = DateTimeOffset.Parse((string)fsPost.Post["date"]),
-                    DateModified = DateTimeOffset.Parse((string)fsPost.Post["modified"]),
-                    Categories = Category.FromCsvCatString((string)fsPost.Post["csv-category-slugs"]).ToList(),
-                    Tags = Category.FromCsvCatString((string)fsPost.Post["csv-tag-slugs"]).ToList(),
-                    Author = PostAuthor.FromString((string)fsPost.Post["author"]),
-                    CommentCount = int.Parse((string)fsPost.Post["comment-count"]),
-
-                    DasBlogEntryId = fsPost.Post["dasblog-entry-id"] != null ? Guid.Parse((string)fsPost.Post["dasblog-entry-id"]) : (Guid?)null,
-                    DasBlogTitle = (string)fsPost.Post["dasblog-title"] ?? null,
-                    DasBlogUniqueTitle = (string)fsPost.Post["dasblog-unique-title"] ?? null,
-
-                    Content = () => Task.Run(() => File.ReadAllText(Path.Combine(fsPost.Directory, ITEM_CONTENT))),
-                    Comments = () => Task.Run(() => JArray
-                        .Parse(File.ReadAllText(Path.Combine(fsPost.Directory, COMMENTS_JSON)))
-                        .Select(fsc => new Comment
-                        {
-                            Content = (string)fsc["content"],
-                            Date = DateTimeOffset.Parse((string)fsc["date"]),
-                            Author = new CommentAuthor
-                            {
-                                Name = (string)fsc["author-name"],
-                                Email = (string)fsc["author-email"],
-                                Url = (string)fsc["author-url"],
-                            }
-                        })),
-                };
-            }
         }
     }
 }
