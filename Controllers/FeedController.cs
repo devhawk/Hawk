@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNet.Mvc;
+using Hawk.Services;
 
-namespace Hawk
+namespace Hawk.Controllers
 {
     class TextWriterResult : IActionResult
     {

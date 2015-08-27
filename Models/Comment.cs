@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hawk
+namespace Hawk.Models
 {
     public class Comment
     {

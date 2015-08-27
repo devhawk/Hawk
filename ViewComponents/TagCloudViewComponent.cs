@@ -1,8 +1,9 @@
 using System;
 using System.Linq;
 using Microsoft.AspNet.Mvc;
+using Hawk.Services;
 
-namespace Hawk
+namespace Hawk.ViewComponents
 {
     public class TagCloudViewComponent : ViewComponent
     {

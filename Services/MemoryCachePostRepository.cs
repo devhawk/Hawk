@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.Caching.Memory;
+using Hawk.Models;
 
-namespace Hawk
+namespace Hawk.Services
 {
     public class MemoryCachePostRepository : IPostRepository
     {

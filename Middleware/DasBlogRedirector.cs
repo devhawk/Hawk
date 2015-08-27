@@ -7,8 +7,10 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Hawk.Models;
+using Hawk.Services;
 
-namespace Hawk
+namespace Hawk.Middleware
 {
 	delegate string Redirector(string path, Func<string, string> query);
 	

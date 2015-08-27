@@ -12,6 +12,9 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Newtonsoft.Json.Linq;
+using Hawk.Middleware;
+using Hawk.Models;
+using Hawk.Services;
 using Azure = Microsoft.WindowsAzure.Storage;
 
 namespace Hawk

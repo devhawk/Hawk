@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Hawk.Models;
 
-namespace Hawk
+namespace Hawk.Services
 {
     public interface IPostRepository
     {

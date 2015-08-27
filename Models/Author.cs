@@ -1,4 +1,4 @@
-﻿namespace Hawk
+﻿namespace Hawk.Models
 {
     public class Author
     {

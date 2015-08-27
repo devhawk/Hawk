@@ -7,7 +7,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 
-namespace Hawk
+namespace Hawk.Middleware
 {
     public class NotFoundMiddleware
 	{

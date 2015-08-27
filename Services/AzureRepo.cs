@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
+using Hawk.Models;
 
-namespace Hawk
+namespace Hawk.Services
 {
     static class AzureRepo
     {

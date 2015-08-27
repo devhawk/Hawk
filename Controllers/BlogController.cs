@@ -6,8 +6,10 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
 using Microsoft.Framework.Logging;
+using Hawk.Models;
+using Hawk.Services;
 
-namespace Hawk
+namespace Hawk.Controllers
 {
 	[Route("blog")]
     public class BlogController : Controller

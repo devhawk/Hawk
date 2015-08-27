@@ -2,8 +2,9 @@ using System;
 using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Framework.Logging;
+using Hawk.Services;
 
-namespace Hawk
+namespace Hawk.Controllers
 {
     public class HomeController : Controller
     {
