@@ -9,39 +9,45 @@ namespace Hawk.Services
 {
     public class MemoryCachePostRepository : IPostRepository
     {
-        const string POSTS = "MemoryCachePostRepository.Posts";
-        const string TAGS = "MemoryCachePostRepository.Tags";
-        const string CATEGORIES = "MemoryCachePostRepository.Categories";
-        const string DASBLOG_ENTRYIDS = "MemoryCachePostRepository.DasBlogEntryIds";
-        const string DASBLOG_TITLES = "MemoryCachePostRepository.DasBlogTitles";
-        const string DASBLOG_UNIQUETITLES = "MemoryCachePostRepository.DasBlogUniqueTitles";
+        const string CLASS_NAME = nameof(MemoryCachePostRepository);
+
+        const string POSTS = CLASS_NAME + ".Posts";
+        const string TAGS = CLASS_NAME + ".Tags";
+        const string CATEGORIES = CLASS_NAME + ".Categories";
+        const string DASBLOG_ENTRYIDS = CLASS_NAME + ".DasBlogEntryIds";
+        const string DASBLOG_TITLES = CLASS_NAME + ".DasBlogTitles";
+        const string DASBLOG_UNIQUETITLES = CLASS_NAME + ".DasBlogUniqueTitles";
+
+        IMemoryCache _cache;
 
         Post[] _posts;
         Tuple<Category, int>[] _tags;
         Tuple<Category, int>[] _categories;
-        Dictionary<Guid, Post> _indexDasBlogEntryId;
-        Dictionary<string, Post> _indexDasBlogTitle;
-        Dictionary<string, Post> _indexDasBlogUniqueTitle;
 
         public MemoryCachePostRepository(IMemoryCache cache)
         {
-            _posts = cache.Get<Post[]>(POSTS);
-            _tags = cache.Get<Tuple<Category, int>[]>(TAGS);
-            _categories = cache.Get<Tuple<Category, int>[]>(CATEGORIES);
-            _indexDasBlogEntryId = cache.Get<Dictionary<Guid, Post>>(DASBLOG_ENTRYIDS);
-            _indexDasBlogTitle = cache.Get<Dictionary<string, Post>>(DASBLOG_TITLES);
-            _indexDasBlogUniqueTitle = cache.Get<Dictionary<string, Post>>(DASBLOG_UNIQUETITLES);
+            _cache = cache;
+
+            // these collections are used on almost every request, so grab them from cache right away
+            _posts = _cache.Get<Post[]>(POSTS);
+            _tags = _cache.Get<Tuple<Category, int>[]>(TAGS);
+            _categories = _cache.Get<Tuple<Category, int>[]>(CATEGORIES);
         }
 
-        static Func<Task<TItem>> MemoizeAsync<TItem>(IMemoryCache cache, string key, Func<Task<TItem>> func)
+        static Func<Task<TItem>> MemoizeAsync<TItem>(IMemoryCache cache, string key, Func<Task<TItem>> func, MemoryCacheEntryOptions options)
         {
             return async () =>
             {
                 TItem item;
                 return cache.TryGetValue<TItem>(key, out item)
                     ? item
-                    : cache.Set<TItem>(key, await func(), new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5) });
+                    : cache.Set<TItem>(key, await func(), options);
             };
+        }
+
+        static Func<Task<TItem>> MemoizeAsync<TItem>(IMemoryCache cache, string key, Func<Task<TItem>> func)
+        {
+            return MemoizeAsync(cache, key, func, new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5) });
         }
 
         public static void UpdateCache(IMemoryCache cache, IEnumerable<Post> posts)
@@ -50,8 +56,8 @@ namespace Hawk.Services
                 .Select(p =>
                 {
                     // replace the Comments and Content function properties with versions that automatically cache the results
-                    p.Comments = MemoizeAsync(cache, $"MemoryCachePostRepository.Post.{p.UniqueKey}.Comments", p.Comments);
-                    p.Content = MemoizeAsync(cache, $"MemoryCachePostRepository.Post.{p.UniqueKey}.Content", p.Content);
+                    p.Comments = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Comments", p.Comments);
+                    p.Content = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Content", p.Content);
                     return p;
                 })
                 .OrderByDescending(p => p.Date)
@@ -102,20 +108,29 @@ namespace Hawk.Services
             return _categories;
         }
 
+        // the dasblog related collections are used rarely, if ever, so only retrieve them from cache on demand
+
+        Post GetFromCachedIndex<T>(string indexName, T key)
+        {
+            var index = _cache.Get<Dictionary<T, Post>>(indexName);
+            return index.ContainsKey(key) ? index[key] : null;
+        }
+
         public Post PostByDasBlogEntryId(Guid entryId)
         {
-            return _indexDasBlogEntryId.ContainsKey(entryId) ? _indexDasBlogEntryId[entryId] : null;
+            return GetFromCachedIndex(DASBLOG_ENTRYIDS, entryId);
         }
 
         public Post PostByDasBlogTitle(string title)
         {
-            return _indexDasBlogTitle[title.ToLowerInvariant()];
+            var key = title.ToLowerInvariant();
+            return GetFromCachedIndex(DASBLOG_TITLES, key);
         }
 
         public Post PostByDasBlogTitle(string title, DateTimeOffset date)
         {
             var key = date.ToString("yyyy/MM/dd/") + title.ToLowerInvariant();
-            return _indexDasBlogUniqueTitle[key];
+            return GetFromCachedIndex(DASBLOG_UNIQUETITLES, key);
         }
     }
 }
