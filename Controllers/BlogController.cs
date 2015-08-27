@@ -57,7 +57,8 @@ namespace Hawk
             var postCount = posts.Count();
             if (postCount == 0)
             {
-                return HttpNotFound();
+                return View("MultiplePosts", posts.ToArray());
+                //return HttpNotFound();
             }
             
             // if the user asks for a page beyond the last page, redirect to the last page

@@ -8,22 +8,30 @@
 {
 <h1>@ViewBag.PageHeader</h1>
 }
-@foreach (var post in Model)
+
+@if (Model.Count() == 0)
 {
-    @Html.Partial("_Post", post);
+<h2>No Posts Found</h2>
 }
-
-@if (ViewBag.OlderPostsLink != null || ViewBag.NewerPostsLink != null)
+else
 {
-<div class="prev-next-page">
-    @if (!string.IsNullOrWhiteSpace(ViewBag.OlderPostsLink))
+    @foreach (var post in Model)
     {
-        <a class="btn btn-primary prevbtn" href="@ViewBag.OlderPostsLink">← Older Posts</a>
+        @Html.Partial("_Post", post);
     }
 
-    @if (!string.IsNullOrWhiteSpace(ViewBag.NewerPostsLink))
+    @if (ViewBag.OlderPostsLink != null || ViewBag.NewerPostsLink != null)
     {
-        <a class="btn btn-primary nextbtn" href="@ViewBag.NewerPostsLink">Newer Posts →</a>
+    <div class="prev-next-page">
+        @if (!string.IsNullOrWhiteSpace(ViewBag.OlderPostsLink))
+        {
+            <a class="btn btn-primary prevbtn" href="@ViewBag.OlderPostsLink">← Older Posts</a>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(ViewBag.NewerPostsLink))
+        {
+            <a class="btn btn-primary nextbtn" href="@ViewBag.NewerPostsLink">Newer Posts →</a>
+        }
+    </div>
     }
-</div>
 }

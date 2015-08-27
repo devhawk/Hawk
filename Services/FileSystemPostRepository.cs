@@ -8,6 +8,8 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Logging;
 
+#if false
+
 namespace Hawk
 {    
     class FileSystemPostRepository : IPostRepository
@@ -131,8 +133,8 @@ namespace Hawk
                     Author = ConvertPostAuthor((string)fsPost.Post["author"]),
                     CommentCount = int.Parse((string)fsPost.Post["comment-count"]),
                         
-                    Content = () => _cache.AsyncMemoize(Path.Combine(fsPost.Directory, ITEM_CONTENT), key => Task.Run(() => File.ReadAllText(key))),
-                    Comments = () => _cache.AsyncMemoize(Path.Combine(fsPost.Directory, COMMENTS_JSON), key => Task.Run(() => JArray
+                    Content = () => _cache.MemoizeAsync(Path.Combine(fsPost.Directory, ITEM_CONTENT), key => Task.Run(() => File.ReadAllText(key))),
+                    Comments = () => _cache.MemoizeAsync(Path.Combine(fsPost.Directory, COMMENTS_JSON), key => Task.Run(() => JArray
                         .Parse(File.ReadAllText(key))
                         .Select(fsc => new Comment
                             {
@@ -175,3 +177,4 @@ namespace Hawk
         }
     }
 }
+#endif

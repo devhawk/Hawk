@@ -9,6 +9,8 @@ using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Azure = Microsoft.WindowsAzure.Storage;
 using System.Threading.Tasks;
+using Microsoft.Framework.Caching.Memory;
+using System.Linq;
 
 namespace Hawk
 {
@@ -38,9 +40,10 @@ namespace Hawk
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddCaching();
             services.AddApplicationInsightsTelemetry(Configuration);
-            
-            var postRepo = Configuration.Get("PostRepostitory");
+
+            services.AddTransient<IPostRepository, MemoryCachePostRepository>();
 
             // this code feels a little smelly. 
             //   * Should I be injecting singletons by type instead of instances? 
@@ -50,7 +53,10 @@ namespace Hawk
             //      * should I be using the memory cache object? Currently, all the metadata is stored in fields inside the single repo object
             //      * Still need to figure out how I'm going to detect changes. I'm thinking of adding a webhook of some sort that I will 
             //        integrate into my authoring tools (once I build those)
-            
+
+            /*
+            var postRepo = Configuration.Get("PostRepostitory");
+
             // default to using Azure
             if (string.IsNullOrEmpty(postRepo) || string.Equals(postRepo, "Azure", StringComparison.OrdinalIgnoreCase))
             {
@@ -86,16 +92,32 @@ namespace Hawk
             else {
                 throw new Exception($"Invalid PostRepository specified ({postRepo})");
             }
+            */
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IPostRepository repo)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IMemoryCache cache)
         {
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
             
             var logger = loggerFactory.CreateLogger(nameof(Startup));
 
-            repo.InitializeAsync(loggerFactory).Wait();
+            // temporarily insert hard coded post
+            Post p = new Post
+            {
+                Author = PostAuthor.ConvertPostAuthor("DevHawk|devhawk|harry@devhawk.net"),
+                Categories = Category.ConvertCsvCatString("Sports|sports").ToList(),
+                CommentCount = 0,
+                Comments = async () => await Task.FromResult(Enumerable.Empty<Comment>()),
+                Content = async () => await Task.FromResult("this is a test"),
+                Date = DateTimeOffset.Parse("2014-04-26T13:13:29-07:00"),
+                DateModified = DateTimeOffset.Parse("2014-04-26T13:13:29-07:00"),
+                Slug = "yet-more-change-for-the-capitals",
+                Tags = Category.ConvertCsvCatString("Hockey|hockey,Washington Capitals|washington-capitals").ToList(),
+                Title = "Yet More Change for the Capitals",
+            };
+
+            MemoryCachePostRepository.UpdateCache(cache, new Post[] { p });
             
             app.UseApplicationInsightsRequestTelemetry();
             

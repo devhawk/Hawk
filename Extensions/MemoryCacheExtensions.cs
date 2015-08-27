@@ -6,7 +6,7 @@ namespace Hawk
 {
     static class MemoryCacheExtensions
     {
-        public static async Task<TItem> AsyncMemoize<TItem>(this IMemoryCache cache, string key, Func<string, Task<TItem>> func)
+        public static async Task<TItem> MemoizeAsync<TItem>(this IMemoryCache cache, string key, Func<string, Task<TItem>> func)
         {
             TItem item;
             return cache.TryGetValue<TItem>(key, out item)

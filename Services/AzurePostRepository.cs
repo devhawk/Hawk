@@ -9,9 +9,11 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.Framework.Logging;
 
+#if false
 namespace Hawk
 {
-	class AzurePostRepository : IPostRepository
+
+    class AzurePostRepository : IPostRepository
     {
         const string ITEM_CONTENT = "content.html";
         readonly CloudStorageAccount _storageAccount;
@@ -165,8 +167,8 @@ namespace Hawk
                         Tags = ConvertCategories(azPost.Properties["Tags"].StringValue).ToList(),
                         Author = ConvertAuthor(azPost.Properties["Author"].StringValue),
                         CommentCount = azPost.Properties["CommentCount"].Int32Value.Value,
-                        Content = () => _contentCache.AsyncMemoize(azPost.PartitionKey, key => GetContent(contentContainer, key)), 
-                        Comments = () => _commentCache.AsyncMemoize(azPost.PartitionKey, key => GetComments(commentsTable, key)), 
+                        Content = () => _contentCache.MemoizeAsync(azPost.PartitionKey, key => GetContent(contentContainer, key)), 
+                        Comments = () => _commentCache.MemoizeAsync(azPost.PartitionKey, key => GetComments(commentsTable, key)), 
                     };
     
                     tempPosts.Add(post);
@@ -205,3 +207,4 @@ namespace Hawk
         }
     }
 }
+#endif
