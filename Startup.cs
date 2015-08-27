@@ -12,6 +12,7 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Newtonsoft.Json.Linq;
+using Azure = Microsoft.WindowsAzure.Storage;
 
 namespace Hawk
 {
@@ -45,55 +46,6 @@ namespace Hawk
             services.AddApplicationInsightsTelemetry(Configuration);
 
             services.AddTransient<IPostRepository, MemoryCachePostRepository>();
-
-            // this code feels a little smelly. 
-            //   * Should I be injecting singletons by type instead of instances? 
-            //      * If so, how do I access the configuration object
-            //   * Should I be using transient objects instead of single instances?
-            //      * The metadata for all my posts is about 2/3 a MB encoded as JSON. So keeping it all in memory seems like the right choice.
-            //      * should I be using the memory cache object? Currently, all the metadata is stored in fields inside the single repo object
-            //      * Still need to figure out how I'm going to detect changes. I'm thinking of adding a webhook of some sort that I will 
-            //        integrate into my authoring tools (once I build those)
-
-            /*
-            var postRepo = Configuration.Get("PostRepostitory");
-
-            // default to using Azure
-            if (string.IsNullOrEmpty(postRepo) || string.Equals(postRepo, "Azure", StringComparison.OrdinalIgnoreCase))
-            {
-                var accountName = Configuration.Get("storage:AccountName");
-                var accountKey  = Configuration.Get("storage:AccountKey"); 
-                
-                Azure.CloudStorageAccount account;
-                if (accountName == null || accountKey == null)
-                {
-                    // if both account name and key aren't specified, use the development account
-                    // TODO : only support DevStorage when env isDevelopment
-                    account = Azure.CloudStorageAccount.DevelopmentStorageAccount;
-                }
-                else
-                {
-                    var creds = new Azure.Auth.StorageCredentials(accountName, accountKey);
-                    account = new Azure.CloudStorageAccount(creds, false);
-                }
-
-                services.AddInstance<IPostRepository>(new AzurePostRepository(account));
-            } 
-            // but also support using the file system
-            else if (string.Equals(postRepo, "FileSystem", StringComparison.OrdinalIgnoreCase))
-            {
-                var path = Configuration.Get("storage:FileSystemPath");
-                if (path == null)
-                {
-                    throw new Exception("FileSystem Storage path not property configured");
-                }
-
-                services.AddInstance<IPostRepository>(new FileSystemPostRepository(path));
-            }  
-            else {
-                throw new Exception($"Invalid PostRepository specified ({postRepo})");
-            }
-            */
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IMemoryCache cache)
@@ -103,11 +55,21 @@ namespace Hawk
             
             var logger = loggerFactory.CreateLogger(nameof(Startup));
 
-            // temp: syncronously load from filesystem
-            var path = Configuration.Get("storage:FileSystemPath");
-            logger.LogInformation("Loading posts from {path}", path);
-            MemoryCachePostRepository.UpdateCache(cache, LoadPostsFromFileSystem(path));
-            
+            // TODO: drive data load from config. 
+            #region temp data load
+
+            // temp: syncronously load blog data from file system
+            //logger.LogInformation("Loading posts from {path}", path);
+            //var path = Configuration.Get("storage:FileSystemPath");
+            //var posts = LoadPostsFromFileSystem(path);
+
+            // temp: syncronously load blog data from Azure dev storage
+            logger.LogInformation("Loading posts from Azure development storage");
+            var posts = AzureRepo.LoadFromAzure(Azure.CloudStorageAccount.DevelopmentStorageAccount);
+            MemoryCachePostRepository.UpdateCache(cache, posts);
+
+            #endregion
+
             app.UseApplicationInsightsRequestTelemetry();
             
             // Use the error page only in development environment.
