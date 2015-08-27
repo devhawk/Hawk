@@ -12,13 +12,14 @@ namespace Hawk
     class TextWriterResult : IActionResult
     {
         readonly Func<TextWriter, Task> _func;
+
+        public string ContentType { get; }
+
         public TextWriterResult(string contentType, Func<TextWriter, Task> func)
         {
             ContentType = contentType;
             _func = func;
         }
-        
-        public string ContentType { get; set; }
         
         public async Task ExecuteResultAsync(ActionContext context)
         {
@@ -34,6 +35,7 @@ namespace Hawk
 
     public class FeedController : Controller
     {
+        //TODO I need a better way of determining this
         static readonly Uri ROOT_URL = new Uri("http://localhost:5000");
 
         readonly IPostRepository _repo;
@@ -54,14 +56,18 @@ namespace Hawk
             this._repo = repo;
             this._telemetryClient = telemetryClient;
         }
-
         
         [RouteAttribute("feed")]
         public IActionResult Index()
         {
             return Rss();
         }
-        
+
+        public IActionResult Rss()
+        {
+            return new TextWriterResult("application/rss+xml", RssAsync);
+        }
+
         async Task RssAsync(TextWriter writer)
         {
             _telemetryClient.TrackPageView($"{Request.Path}{Request.QueryString}");
@@ -117,17 +123,17 @@ namespace Hawk
             }
         }
         
-        public IActionResult Rss()
-        {
-            return new TextWriterResult("application/rss+xml", RssAsync);
-        }
-
         [RouteAttribute("atom")]
         public IActionResult RootAtom()
         {
             return Atom();
         }
-        
+
+        public IActionResult Atom()
+        {
+            return new TextWriterResult("application/atom+xml", AtomAsync);
+        }
+
         async Task AtomAsync(TextWriter writer)
         {
             _telemetryClient.TrackPageView($"{Request.Path}{Request.QueryString}");
@@ -195,11 +201,6 @@ namespace Hawk
 
                 xw.WriteEndElement(); // feed
             }
-        }
-
-        public IActionResult Atom()
-        {
-            return new TextWriterResult("application/atom+xml", AtomAsync);
         }
     }
 }
