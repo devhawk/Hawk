@@ -26,7 +26,7 @@ namespace Hawk.Models
 
         public static string ToString(IEnumerable<Category> cats)
         {
-            return cats
+            return cats.Count() == 0 ? string.Empty : cats
                 .Select(cat => $"{cat.Title}|{cat.Slug}")
                 .Aggregate((a, b) => a + "," + b);
         }

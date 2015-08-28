@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
-using System.IO;
 using Hawk.Services;
 
 namespace Hawk.Models
@@ -17,8 +18,8 @@ namespace Hawk.Models
         public DateTimeOffset Date { get; set; }
         public DateTimeOffset DateModified { get; set; }
 
-        public IList<Category> Categories { get; set; }
-        public IList<Category> Tags { get; set; }
+        public IEnumerable<Category> Categories { get; set; }
+        public IEnumerable<Category> Tags { get; set; }
         public PostAuthor Author { get; set; }
         
         public int CommentCount { get; set; }
@@ -53,7 +54,7 @@ namespace Hawk.Models
             return new Post()
             {
                 Slug = dte.Properties["Slug"].StringValue,
-                Title = System.Net.WebUtility.HtmlDecode(dte.Properties["Title"].StringValue),
+                Title = WebUtility.HtmlDecode(dte.Properties["Title"].StringValue),
                 Date = dte.Properties["Date"].DateTimeOffsetValue.Value,
                 DateModified = dte.Properties["Modified"].DateTimeOffsetValue.Value,
                 Categories = Category.FromString(dte.Properties["Categories"].StringValue).ToList(),
@@ -70,12 +71,43 @@ namespace Hawk.Models
             };
         }
 
+        public static DynamicTableEntity ToDte(Post post)
+        {
+            var dte = new DynamicTableEntity(post.UniqueKey, string.Empty);
+
+            dte.Properties.Add("Slug", EntityProperty.GeneratePropertyForString(post.Slug));
+            dte.Properties.Add("Title", EntityProperty.GeneratePropertyForString(WebUtility.HtmlEncode(post.Title)));
+            dte.Properties.Add("Date", EntityProperty.GeneratePropertyForDateTimeOffset(post.Date));
+            dte.Properties.Add("DateModified", EntityProperty.GeneratePropertyForDateTimeOffset(post.DateModified));
+            dte.Properties.Add("Categories", EntityProperty.GeneratePropertyForString(Category.ToString(post.Categories)));
+            dte.Properties.Add("Tags", EntityProperty.GeneratePropertyForString(Category.ToString(post.Tags)));
+            dte.Properties.Add("Author", EntityProperty.GeneratePropertyForString(PostAuthor.ToString(post.Author)));
+            dte.Properties.Add("CommentCount", EntityProperty.GeneratePropertyForInt(post.CommentCount));
+
+            if (post.DasBlogEntryId.HasValue)
+            {
+                dte.Properties.Add("DasBlogEntryId", EntityProperty.GeneratePropertyForGuid(post.DasBlogEntryId.Value));
+            }
+
+            if (!string.IsNullOrEmpty(post.DasBlogTitle))
+            {
+                dte.Properties.Add("DasBlogTitle", EntityProperty.GeneratePropertyForString(post.DasBlogTitle));
+            }
+
+            if (!string.IsNullOrEmpty(post.DasBlogUniqueTitle))
+            {
+                dte.Properties.Add("DasBlogUniqueTitle", EntityProperty.GeneratePropertyForString(post.DasBlogUniqueTitle));
+            }
+
+            return dte;
+        }
+
         public static Post FromDirectory(string directory)
         {
-            //.Select(dir => Tuple.Create(dir, JsonToPost(dir, 
+            var jsonPostPath = Path.Combine(directory, FileSystemRepo.ITEM_JSON);
+            var jsonPost = JObject.Parse(File.ReadAllText(jsonPostPath));
 
-
-            var jsonPost = JObject.Parse(File.ReadAllText(Path.Combine(directory, FileSystemRepo.ITEM_JSON)));
+            var jsonCommentsPath = Path.Combine(directory, FileSystemRepo.COMMENTS_JSON);
 
             return new Post()
             {
@@ -83,8 +115,8 @@ namespace Hawk.Models
                 Title = System.Net.WebUtility.HtmlDecode((string)jsonPost["title"]),
                 Date = DateTimeOffset.Parse((string)jsonPost["date"]),
                 DateModified = DateTimeOffset.Parse((string)jsonPost["modified"]),
-                Categories = Category.FromString((string)jsonPost["csv-category-slugs"]).ToList(),
-                Tags = Category.FromString((string)jsonPost["csv-tag-slugs"]).ToList(),
+                Categories = Category.FromString((string)jsonPost["csv-category-slugs"]),
+                Tags = Category.FromString((string)jsonPost["csv-tag-slugs"]),
                 Author = PostAuthor.FromString((string)jsonPost["author"]),
                 CommentCount = int.Parse((string)jsonPost["comment-count"]),
 
@@ -92,9 +124,9 @@ namespace Hawk.Models
                 DasBlogTitle = (string)jsonPost["dasblog-title"] ?? null,
                 DasBlogUniqueTitle = (string)jsonPost["dasblog-unique-title"] ?? null,
 
-                Content = () => Task.Run(() => File.ReadAllText(Path.Combine(directory, FileSystemRepo.ITEM_CONTENT))),
-                Comments = () => Task.Run(() => JArray
-                    .Parse(File.ReadAllText(Path.Combine(directory, FileSystemRepo.COMMENTS_JSON)))
+                Content = () => Task.Run(() => File.ReadAllText(Path.Combine(directory, FileSystemRepo.RENDERED_CONTENT_FILENAME))),
+                Comments = () => Task.Run(() => !File.Exists(jsonCommentsPath) ? Enumerable.Empty<Comment>() : JArray
+                    .Parse(File.ReadAllText(jsonCommentsPath))
                     .Select(fsc => new Comment
                     {
                         Content = (string)fsc["content"],

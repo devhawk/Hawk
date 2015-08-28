@@ -1,5 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
-using System;
+﻿using System;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Hawk.Models
 {
@@ -8,6 +8,15 @@ namespace Hawk.Models
         public CommentAuthor Author { get; set; }
         public DateTimeOffset Date { get; set; }
         public string Content { get; set; }
+
+        public string UniqueKey
+        {
+            get
+            {
+                return Date.ToString("yyyyMMdd-HHmmss");
+            }
+        }
+
 
         public static Comment FromDte(DynamicTableEntity dte)
         {
@@ -24,5 +33,17 @@ namespace Hawk.Models
             };
         }
 
+        public static DynamicTableEntity ToDte(Comment comment, string postKey)
+        {
+            var dte = new DynamicTableEntity(postKey, comment.UniqueKey);
+
+            dte.Properties.Add("Date", EntityProperty.GeneratePropertyForDateTimeOffset(comment.Date));
+            dte.Properties.Add("Content", EntityProperty.GeneratePropertyForString(comment.Content));
+            dte.Properties.Add("AuthorName", EntityProperty.GeneratePropertyForString(comment.Author.Name));
+            dte.Properties.Add("AuthorEmail", EntityProperty.GeneratePropertyForString(comment.Author.Email));
+            dte.Properties.Add("AuthorUrl", EntityProperty.GeneratePropertyForString(comment.Author.Url));
+
+            return dte;
+        }
     }
 }
