@@ -10,7 +10,6 @@ namespace Hawk.Services
     public class MemoryCachePostRepository : IPostRepository
     {
         const string CLASS_NAME = nameof(MemoryCachePostRepository);
-
         const string POSTS = CLASS_NAME + ".Posts";
         const string TAGS = CLASS_NAME + ".Tags";
         const string CATEGORIES = CLASS_NAME + ".Categories";
@@ -53,12 +52,22 @@ namespace Hawk.Services
         public static void UpdateCache(IMemoryCache cache, IEnumerable<Post> posts)
         {
             var postArray = posts
-                .Select(p =>
+                .Select(p => new Post
                 {
+                    Author = p.Author,
+                    Categories = p.Categories,
+                    CommentCount = p.CommentCount,
                     // replace the Comments and Content function properties with versions that automatically cache the results
-                    p.Comments = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Comments", p.Comments);
-                    p.Content = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Content", p.Content);
-                    return p;
+                    Comments = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Comments", p.Comments),
+                    Content = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Content", p.Content),
+                    DasBlogEntryId = p.DasBlogEntryId,
+                    DasBlogTitle = p.DasBlogTitle,
+                    DasBlogUniqueTitle = p.DasBlogUniqueTitle,
+                    Date = p.Date,
+                    DateModified = p.DateModified,
+                    Slug = p.Slug,
+                    Tags = p.Tags,
+                    Title = p.Title,
                 })
                 .OrderByDescending(p => p.Date)
                 .ToArray();
