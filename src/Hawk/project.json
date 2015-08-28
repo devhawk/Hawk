@@ -21,7 +21,8 @@
 
   "commands": {
     "web": "Microsoft.AspNet.Hosting --ASPNET_ENV Development --server Microsoft.AspNet.Server.WebListener --config hosting.ini",
-    "webprod": "Microsoft.AspNet.Hosting --ASPNET_ENV Production --server Microsoft.AspNet.Server.WebListener --config hosting.ini"
+    "webprod": "Microsoft.AspNet.Hosting --ASPNET_ENV Production --server Microsoft.AspNet.Server.WebListener --config hosting.ini",
+    "DumpCategories": "DumpCategories"
   },
 
   "frameworks": {

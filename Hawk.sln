@@ -3,7 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hawk", "Hawk.xproj", "{1C88C25C-B34E-4316-A67D-94CE4DDE6DE2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D5D64B5-96BF-425A-A3FA-9FB51CBA01E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7A9A9254-27E5-43A1-84DF-E32A21BE199C}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hawk", "src\Hawk\Hawk.xproj", "{1C88C25C-B34E-4316-A67D-94CE4DDE6DE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +25,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1C88C25C-B34E-4316-A67D-94CE4DDE6DE2} = {4D5D64B5-96BF-425A-A3FA-9FB51CBA01E5}
 	EndGlobalSection
 EndGlobal
