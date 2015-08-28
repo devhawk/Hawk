@@ -8,7 +8,7 @@ namespace Hawk.Models
         public string Slug { get; set; }
         public string Title { get; set; }
 
-        public static IEnumerable<Category> FromCsvCatString(string text)
+        public static IEnumerable<Category> FromString(string text)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -22,6 +22,13 @@ namespace Hawk.Models
                     Title = a[0],
                     Slug = a[1],
                 });
+        }
+
+        public static string ToString(IEnumerable<Category> cats)
+        {
+            return cats
+                .Select(cat => $"{cat.Title}|{cat.Slug}")
+                .Aggregate((a, b) => a + "," + b);
         }
     }
 }

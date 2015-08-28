@@ -16,5 +16,10 @@
                 Email = a[2],
             };
         }
+
+        public static string ToString(PostAuthor author)
+        {
+            return $"{author.Name}|{author.Slug}|{author.Email}";
+        }
     }
 }
