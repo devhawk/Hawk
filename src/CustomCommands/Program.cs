@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Framework.Runtime;
 using System.Reflection;
+using Microsoft.Framework.Runtime;
 
 namespace CustomCommands
 {
@@ -45,6 +43,9 @@ namespace CustomCommands
 
             Console.WriteLine($"Invoking {customCommandsTypeInfo.Namespace}.{customCommandsTypeInfo.Name}.{methodName}");
             method.Invoke(null, null);
+
+            // TODO: add support for async methods - get the Task back from the method and call .Wait()
+            // TODO: add support for paassing unused command line args as parameters to method (require that method parameters must be strings)
         }
     }
 }
