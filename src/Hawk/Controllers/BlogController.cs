@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
+using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Logging;
 using Hawk.Models;
 using Hawk.Services;
@@ -38,6 +39,23 @@ namespace Hawk.Controllers
         void Log([CallerMemberName] string methodName = null)
         {
             _logger.LogInformation(methodName);
+        }
+
+        [Route("refresh")]
+        public IActionResult Refresh()
+        {
+            _logger.LogInformation("Refreshing content");
+
+            // TODO: I'm guessing there's a generic version of this method I could be calling
+            var cache = (IMemoryCache)Context.ApplicationServices.GetService(typeof(IMemoryCache));
+
+            var reloadContent = cache.Get<Action>("Hawk.ReloadContent");
+            if (reloadContent != null)
+            {
+                reloadContent();
+            }
+
+            return RedirectToAction("Index", "Blog");
         }
 
         RouteValueDictionary GetRouteValues(int pageNum, object routeValues = null)

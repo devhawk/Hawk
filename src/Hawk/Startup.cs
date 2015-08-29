@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.StaticFiles;
@@ -8,7 +9,6 @@ using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Hawk.Middleware;
 using Hawk.Services;
-using System.Linq;
 
 namespace Hawk
 {
@@ -57,7 +57,10 @@ namespace Hawk
             // temp: syncronously load blog data from file system
             var path = Configuration.Get("storage:FileSystemPath");
             logger.LogInformation("Loading posts from {path}", path);
-            MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
+
+            Action load = () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
+            load();
+            cache.Set("Hawk.ReloadContent", load);
 
             // temp: syncronously load blog data from Azure dev storage
             //logger.LogInformation("Loading posts from Azure development storage");
