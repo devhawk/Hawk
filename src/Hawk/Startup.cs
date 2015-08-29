@@ -9,6 +9,7 @@ using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
 using Hawk.Middleware;
 using Hawk.Services;
+using Azure = Microsoft.WindowsAzure.Storage;
 
 namespace Hawk
 {
@@ -55,18 +56,21 @@ namespace Hawk
             #region temp data load
 
             // temp: syncronously load blog data from file system
-            var path = Configuration.Get("storage:FileSystemPath");
-            logger.LogInformation("Loading posts from {path}", path);
-
-            Action load = () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
-            load();
-            cache.Set("Hawk.ReloadContent", load);
+            //var path = Configuration.Get("storage:FileSystemPath");
+            //logger.LogInformation("Loading posts from {path}", path);
+            //Action load = () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
 
             // temp: syncronously load blog data from Azure dev storage
-            //logger.LogInformation("Loading posts from Azure development storage");
-            //var loadTask = AzureRepo.LoadFromAzureAsync(Azure.CloudStorageAccount.DevelopmentStorageAccount);
-            //loadTask.Wait();
-            //MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
+            logger.LogInformation("Loading posts from Azure development storage");
+            Action load = () =>
+            {
+                var loadTask = AzureRepo.LoadFromAzureAsync(Azure.CloudStorageAccount.DevelopmentStorageAccount);
+                loadTask.Wait();
+                MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
+            };
+
+            load();
+            cache.Set("Hawk.ReloadContent", load);
 
             #endregion
 
