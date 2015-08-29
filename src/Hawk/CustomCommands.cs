@@ -97,6 +97,7 @@ namespace Hawk
             //TODO: read path from config
             var path = "E:\\dev\\DevHawk\\Content\\";
             var posts = FileSystemRepo.EnumeratePostDirectories(path)
+                .Reverse()
                 .Select(dir => new
                 {
                     Directory = dir,
