@@ -51,16 +51,28 @@ namespace Hawk
             var cats = posts
                 .SelectMany(p => p.Categories)
                 .Distinct(comparer)
-                .ToDictionary(c => c.Slug, c => c.Title);
+                .ToDictionary(c => c.Slug, c => Category.ToString(c));
 
             var tags = posts
                 .SelectMany(p => p.Tags)
                 .Distinct(comparer)
-                .ToDictionary(c => c.Slug, c => c.Title);
+                .ToDictionary(c => c.Slug, c => Category.ToString(c));
+
+            var jsonCat = new JObject();
+            foreach (var cat in cats.OrderBy(kvp => kvp.Key))
+            {
+                jsonCat.Add(cat.Key, JValue.CreateString(cat.Value));
+            }
+
+            var jsonTag = new JObject();
+            foreach (var tag in tags.OrderBy(kvp => kvp.Key))
+            {
+                jsonTag.Add(tag.Key, JValue.CreateString(tag.Value));
+            }
 
             var json = new JObject();
-            json.Add("categories", JObject.Parse(JsonConvert.SerializeObject(cats)));
-            json.Add("tags", JObject.Parse(JsonConvert.SerializeObject(tags)));
+            json.Add("categories", jsonCat);
+            json.Add("tags", jsonTag);
 
             File.WriteAllText(
                 Path.Combine(path, "CategoriesAndTags.json"), 

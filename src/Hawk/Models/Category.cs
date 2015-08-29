@@ -24,10 +24,15 @@ namespace Hawk.Models
                 });
         }
 
+        public static string ToString(Category cat)
+        {
+            return cat == null ? string.Empty : $"{cat.Title}|{cat.Slug}";
+        }
+
         public static string ToString(IEnumerable<Category> cats)
         {
             return cats.Count() == 0 ? string.Empty : cats
-                .Select(cat => $"{cat.Title}|{cat.Slug}")
+                .Select(Category.ToString)
                 .Aggregate((a, b) => a + "," + b);
         }
     }
