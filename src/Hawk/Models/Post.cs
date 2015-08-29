@@ -35,7 +35,7 @@ namespace Hawk.Models
         {
             get
             {
-                return Date.ToString("yyyyMMdd-HHmm-") + Slug;
+                return Date.ToString("yyyyMMdd-") + Slug;
             }
         }
 
@@ -56,7 +56,7 @@ namespace Hawk.Models
                 Slug = dte.Properties["Slug"].StringValue,
                 Title = WebUtility.HtmlDecode(dte.Properties["Title"].StringValue),
                 Date = dte.Properties["Date"].DateTimeOffsetValue.Value,
-                DateModified = dte.Properties["Modified"].DateTimeOffsetValue.Value,
+                DateModified = dte.Properties["DateModified"].DateTimeOffsetValue.Value,
                 Categories = Category.FromString(dte.Properties["Categories"].StringValue).ToList(),
                 Tags = Category.FromString(dte.Properties["Tags"].StringValue).ToList(),
                 Author = PostAuthor.FromString(dte.Properties["Author"].StringValue),
@@ -140,8 +140,5 @@ namespace Hawk.Models
                     })),
             };
         }
-
-
-
     }
 }
