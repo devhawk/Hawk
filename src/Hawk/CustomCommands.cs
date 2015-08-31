@@ -3,21 +3,35 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Framework.Configuration;
+using Microsoft.Framework.Runtime;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Hawk.Models;
 using Hawk.Services;
-using Newtonsoft.Json.Linq;
 
 namespace Hawk
 {
     public class CustomCommands
     {
-        IServiceProvider _provider;
-        public CustomCommands(IServiceProvider provider)
+        readonly IApplicationEnvironment _appEnv;
+        readonly IServiceProvider _provider;
+
+        public IConfiguration Configuration { get; set; }
+
+        public CustomCommands(IServiceProvider provider, IApplicationEnvironment appEnv)
         {
+            _appEnv = appEnv;
             _provider = provider;
+
+            var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
+                .AddJsonFile("config.json", true)
+                .AddJsonFile($"config.development.json", true)
+                .AddUserSecrets()
+                .AddEnvironmentVariables();
+
+            Configuration = builder.Build();
         }
 
         class FuncEqualityComparer<T> : IEqualityComparer<T>
@@ -49,8 +63,7 @@ namespace Hawk
 
         public void ProcessCategoriesAndTags()
         {
-            //TODO: read path from config
-            var path = "E:\\dev\\DevHawk\\Content\\";
+            var path = Configuration.Get("FileSystemPath");
             var posts = FileSystemRepo.EnumeratePosts(path);
             var comparer = new FuncEqualityComparer<Category>((a, b) => a.Slug == b.Slug, a => a.Slug.GetHashCode());
 
@@ -85,10 +98,11 @@ namespace Hawk
                 json.ToString());
         }
 
-        static async Task WritePostsToAzureAsync()
+        async Task WritePostsToAzureAsync()
         {
-            //TODO: get storage account info from config
-            var storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
+            var path = Configuration.Get("FileSystemPath");
+            var storageAccount = CloudStorageAccount.Parse(Configuration.Get("AzureConnectionString"));
+            Console.WriteLine($"Uploading posts from {path} to {storageAccount.Credentials.AccountName}");
 
             var blobClient = storageAccount.CreateCloudBlobClient();
             var tableClient = storageAccount.CreateCloudTableClient();
@@ -100,8 +114,6 @@ namespace Hawk
             var commentsTable = tableClient.GetTableReference("blogComments");
             await commentsTable.CreateIfNotExistsAsync();
 
-            //TODO: read path from config
-            var path = "E:\\dev\\DevHawk\\Content\\";
             var posts = FileSystemRepo.EnumeratePostDirectories(path)
                 .Reverse()
                 .Select(dir => new
@@ -151,6 +163,30 @@ namespace Hawk
         {
             // helper until I add async method support to CustomCommands
             WritePostsToAzureAsync().Wait();
+        }
+
+        public void FixPaths()
+        {
+            var path = Configuration.Get("FileSystemPath");
+            var posts = FileSystemRepo.EnumeratePostDirectories(path)
+                .Reverse()
+                .Select(dir => new
+                {
+                    Directory = dir,
+                    Post = Post.FromDirectory(dir),
+                })
+                .ToArray();
+
+            foreach (var post in posts)
+            {
+                var oldDirName = Path.GetFileName(post.Directory);
+                var newDirName = $"{post.Post.Date.ToString("yyyyMMdd")}-{post.Post.Slug}";
+                if (oldDirName != newDirName)
+                {
+                    Console.WriteLine($"fixing {oldDirName}");
+                    Directory.Move(Path.Combine(path, oldDirName), Path.Combine(path, newDirName));
+                }
+            }
         }
     }
 }

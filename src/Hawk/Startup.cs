@@ -6,6 +6,7 @@ using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Runtime;
 using Hawk.Middleware;
 using Hawk.Services;
@@ -13,6 +14,19 @@ using Azure = Microsoft.WindowsAzure.Storage;
 
 namespace Hawk
 {
+    public class HawkOptions
+    {
+        public enum PostRepositoryOptions
+        {
+            Azure,
+            FileSystem,
+        }
+
+        public PostRepositoryOptions PostRepostitory { get; set; }
+        public string FileSystemPath { get; set; }
+        public string AzureConnectionString { get; set; }
+    }
+
     public class Startup
     {
         public Startup(IHostingEnvironment env, IApplicationEnvironment appEnv)
@@ -22,7 +36,7 @@ namespace Hawk
                 .AddJsonFile("config.json", true)
                 .AddJsonFile($"config.{env.EnvironmentName}.json", true);
 
-            //builder.AddUserSecrets();
+            builder.AddUserSecrets();
             if (env.IsDevelopment())
             {
                 builder.AddApplicationInsightsSettings(true);
@@ -38,6 +52,9 @@ namespace Hawk
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+            services.Configure<HawkOptions>(Configuration);
+
             services.AddMvc();
             services.AddCaching();
             services.AddApplicationInsightsTelemetry(Configuration);
@@ -45,36 +62,39 @@ namespace Hawk
             services.AddTransient<IPostRepository, MemoryCachePostRepository>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IMemoryCache cache)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IMemoryCache cache, IOptions<HawkOptions> optionsAccessor)
         {
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
 
             var logger = loggerFactory.CreateLogger(nameof(Startup));
 
-            // TODO: drive data load from config. 
-            #region temp data load
+            var options = optionsAccessor.Options;
 
-            // temp: syncronously load blog data from file system
-            //var path = Configuration.Get("storage:FileSystemPath");
-            //logger.LogInformation("Loading posts from {path}", path);
-            //Action load = () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
+            Action load = () => { throw new Exception("Post load action undefined"); };
 
-            // temp: syncronously load blog data from Azure dev storage
-            var connString = Configuration.Get("storage:AzureConnectionString");
-            var account = Azure.CloudStorageAccount.Parse(connString);
-            logger.LogInformation($"Loading posts from Azure ({account.Credentials.AccountName})");
-            Action load = () =>
+            if (options.PostRepostitory == HawkOptions.PostRepositoryOptions.FileSystem)
             {
-                var loadTask = AzureRepo.LoadFromAzureAsync(account);
-                loadTask.Wait();
-                MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
-            };
+                var path = Configuration.Get("storage:FileSystemPath");
+                logger.LogInformation("Loading posts from {path}", path);
+
+                load = () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
+            }
+
+            if (options.PostRepostitory == HawkOptions.PostRepositoryOptions.Azure)
+            {
+                var account = Azure.CloudStorageAccount.Parse(options.AzureConnectionString);
+                logger.LogInformation($"Loading posts from Azure ({account.Credentials.AccountName})");
+                load = () =>
+                {
+                    var loadTask = AzureRepo.LoadFromAzureAsync(account);
+                    loadTask.Wait();
+                    MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
+                };
+            }
 
             load();
             cache.Set("Hawk.ReloadContent", load);
-
-            #endregion
 
             app.UseApplicationInsightsRequestTelemetry();
 

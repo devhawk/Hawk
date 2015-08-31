@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-//using Microsoft.Framework.Configuration;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Runtime;
 
 namespace CustomCommands
 {
@@ -26,17 +24,6 @@ namespace CustomCommands
                 Console.WriteLine("You must specify the command to run as the first command line argument");
                 return;
             }
-
-            var builder = new ConfigurationBuilder(_appEnv.ApplicationBasePath)
-                .AddJsonFile("config.json", true)
-                .AddJsonFile($"config.Development.json", true);
-
-            //builder.AddUserSecrets();
-
-            ////builder.AddEnvironmentVariables();
-
-            var Configuration = builder.Build();
-
 
             var methodName = args[0];
 
