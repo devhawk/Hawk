@@ -1,64 +1,64 @@
 {
-    "webroot": "wwwroot",
-    "userSecretsId": "hawk-proto2-37070d15-24ac-497b-95b0-998c4eec5416",
-    "version": "1.0.0-*",
+  "webroot": "wwwroot",
+  "userSecretsId": "hawk-proto2-37070d15-24ac-497b-95b0-998c4eec5416",
+  "version": "1.0.0-*",
 
-    "dependencies": {
-        "Microsoft.ApplicationInsights.AspNet": "1.0.0-beta6",
-        "Microsoft.AspNet.Diagnostics": "1.0.0-beta6",
-        "Microsoft.AspNet.Mvc": "6.0.0-beta6",
-        "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-beta6",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-beta6",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-beta6",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-beta6",
-        "Microsoft.Framework.Logging": "1.0.0-beta6",
-        "Microsoft.Framework.Logging.Console": "1.0.0-beta6",
-        "Microsoft.Framework.Cache.Memory": "1.0.0-beta3",
-        "Microsoft.Framework.Configuration.UserSecrets": "1.0.0-beta6",
-        "Newtonsoft.Json": "7.0.1",
-        "WindowsAzure.Storage": "4.4.1-preview",
-        "CustomCommands": "1.0.0-*"
-    },
+  "dependencies": {
+    "Microsoft.ApplicationInsights.AspNet": "1.0.0-beta6",
+    "Microsoft.AspNet.Diagnostics": "1.0.0-beta6",
+    "Microsoft.AspNet.Mvc": "6.0.0-beta6",
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-beta6",
+    "Microsoft.AspNet.Server.IIS": "1.0.0-beta6",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-beta6",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-beta6",
+    "Microsoft.Framework.Logging": "1.0.0-beta6",
+    "Microsoft.Framework.Logging.Console": "1.0.0-beta6",
+    "Microsoft.Framework.Cache.Memory": "1.0.0-beta3",
+    "Microsoft.Framework.Configuration.UserSecrets": "1.0.0-beta6",
+    "Newtonsoft.Json": "7.0.1",
+    "WindowsAzure.Storage": "4.4.1-preview",
+    "CustomCommands": "1.0.0-*"
+  },
 
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting --ASPNET_ENV Development --server Microsoft.AspNet.Server.WebListener --config hosting.ini",
-        "webprod": "Microsoft.AspNet.Hosting --ASPNET_ENV Production --server Microsoft.AspNet.Server.WebListener --config hosting.ini",
-        "ProcessCategoriesAndTags": "CustomCommands ProcessCategoriesAndTags",
-        "WritePostsToAzure": "CustomCommands WritePostsToAzure"
-    },
+  "commands": {
+    "web": "Microsoft.AspNet.Hosting --ASPNET_ENV Development --server Microsoft.AspNet.Server.WebListener --config hosting.ini",
+    "webprod": "Microsoft.AspNet.Hosting --ASPNET_ENV Production --server Microsoft.AspNet.Server.WebListener --config hosting.ini",
+    "ProcessCategoriesAndTags": "CustomCommands ProcessCategoriesAndTags",
+    "WritePostsToAzure": "CustomCommands WritePostsToAzure"
+  },
 
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  },
 
-    "publishExclude": [
-        "node_modules",
-        "bower_components",
-        "wwwroot/bower/**",
-        "**.xproj",
-        "**.user",
-        "**.vspscc"
+  "publishExclude": [
+    "node_modules",
+    "bower_components",
+    "wwwroot/bower/**",
+    "**.xproj",
+    "**.user",
+    "**.vspscc"
+  ],
+
+  "exclude": [
+    "wwwroot",
+    "node_modules",
+    "bower_components"
+  ],
+
+  "scripts": {
+    "postrestore": [
+      "npm install",
+      ".\\node_modules\\.bin\\bower.cmd install"
     ],
-
-    "exclude": [
-        "wwwroot",
-        "node_modules",
-        "bower_components"
+    "prepublish": [
+      "npm install",
+      ".\\node_modules\\.bin\\bower.cmd install",
+      ".\\node_modules\\.bin\\gulp.cmd css"
     ],
-
-    "scripts": {
-        "postrestore": [
-            "npm install",
-            ".\\node_modules\\.bin\\bower.cmd install"
-        ],
-        "prepublish": [
-            "npm install",
-            ".\\node_modules\\.bin\\bower.cmd install",
-            ".\\node_modules\\.bin\\gulp.cmd css"
-        ],
-        "postpublish": [
-            ".\\node_modules\\.bin\\gulp.cmd output:css"
-        ]
-    }
+    "postpublish": [
+      ".\\node_modules\\.bin\\gulp.cmd output:css"
+    ]
+  }
 }
