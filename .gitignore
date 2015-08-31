@@ -208,3 +208,4 @@ FakesAssemblies/
 # Hawk custom git ignore rules
 wwwroot/bower/*
 wwwroot/css/*.css
+src/Hawk/wwwroot/css/*.css
