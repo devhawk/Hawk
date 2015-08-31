@@ -19,18 +19,9 @@ namespace Hawk.Services
 
         IMemoryCache _cache;
 
-        Post[] _posts;
-        Tuple<Category, int>[] _tags;
-        Tuple<Category, int>[] _categories;
-
         public MemoryCachePostRepository(IMemoryCache cache)
         {
             _cache = cache;
-
-            // these collections are used on almost every request, so grab them from cache right away
-            _posts = _cache.Get<Post[]>(POSTS);
-            _tags = _cache.Get<Tuple<Category, int>[]>(TAGS);
-            _categories = _cache.Get<Tuple<Category, int>[]>(CATEGORIES);
         }
 
         static Func<Task<TItem>> MemoizeAsync<TItem>(IMemoryCache cache, string key, Func<Task<TItem>> func, MemoryCacheEntryOptions options)
@@ -57,7 +48,7 @@ namespace Hawk.Services
                     Author = p.Author,
                     Categories = p.Categories,
                     CommentCount = p.CommentCount,
-                    // replace the Comments and Content function properties with versions that automatically cache the results
+                    //TODO: link the cached content to the main posts cache entry so that these get ejected from cache when content is refreshed
                     Comments = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Comments", p.Comments),
                     Content = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Content", p.Content),
                     DasBlogEntryId = p.DasBlogEntryId,
@@ -104,17 +95,17 @@ namespace Hawk.Services
 
         public IEnumerable<Post> Posts()
         {
-            return _posts;
+            return _cache.Get<Post[]>(POSTS);
         }
 
         public IEnumerable<Tuple<Category, int>> Tags()
         {
-            return _tags;
+            return _cache.Get<Tuple<Category, int>[]>(TAGS);
         }
 
         public IEnumerable<Tuple<Category, int>> Categories()
         {
-            return _categories;
+            return _cache.Get<Tuple<Category, int>[]>(CATEGORIES);
         }
 
         // the dasblog related collections are used rarely, if ever, so only retrieve them from cache on demand

@@ -75,7 +75,12 @@ namespace Hawk
 
             if (options.PostRepostitory == HawkOptions.PostRepositoryOptions.FileSystem)
             {
-                var path = Configuration.Get("storage:FileSystemPath");
+                if (env.IsDevelopment() == false)
+                {
+                    throw new Exception("FileSystem repository can only be used in development environment.");
+                }
+
+                var path = options.FileSystemPath;
                 logger.LogInformation("Loading posts from {path}", path);
 
                 load = () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
@@ -84,6 +89,12 @@ namespace Hawk
             if (options.PostRepostitory == HawkOptions.PostRepositoryOptions.Azure)
             {
                 var account = Azure.CloudStorageAccount.Parse(options.AzureConnectionString);
+
+                if (env.IsDevelopment() == false && account.Credentials.AccountName == "devstoreaccount1")
+                {
+                    throw new Exception("Azure DevelopmentStorageAccount can only be used in development environment.");
+                }
+
                 logger.LogInformation($"Loading posts from Azure ({account.Credentials.AccountName})");
                 load = () =>
                 {
