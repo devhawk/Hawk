@@ -14,6 +14,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hawk", "src\Hawk\Hawk.xproj
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CustomCommands", "src\CustomCommands\CustomCommands.xproj", "{2D01D9D7-FF24-481B-BE5E-7ECE371D3C5B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublishDraft", "src\PublishDraft\PublishDraft.csproj", "{E91789BC-39D9-41BE-A954-4EEDCD2221EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,6 +30,10 @@ Global
 		{2D01D9D7-FF24-481B-BE5E-7ECE371D3C5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D01D9D7-FF24-481B-BE5E-7ECE371D3C5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D01D9D7-FF24-481B-BE5E-7ECE371D3C5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E91789BC-39D9-41BE-A954-4EEDCD2221EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E91789BC-39D9-41BE-A954-4EEDCD2221EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E91789BC-39D9-41BE-A954-4EEDCD2221EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E91789BC-39D9-41BE-A954-4EEDCD2221EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -35,5 +41,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1C88C25C-B34E-4316-A67D-94CE4DDE6DE2} = {4D5D64B5-96BF-425A-A3FA-9FB51CBA01E5}
 		{2D01D9D7-FF24-481B-BE5E-7ECE371D3C5B} = {4D5D64B5-96BF-425A-A3FA-9FB51CBA01E5}
+		{E91789BC-39D9-41BE-A954-4EEDCD2221EC} = {4D5D64B5-96BF-425A-A3FA-9FB51CBA01E5}
 	EndGlobalSection
 EndGlobal

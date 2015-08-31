@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "highlight.js": "^8.6.0",
+    "markdown-it": "^4.3.0",
+    "markdown-it-container": "^1.0.0",
+    "markdown-it-emoji": "^1.0.0",
+    "markdown-it-footnote": "^1.0.0",
+    "markdown-it-sup": "^1.0.0"
+  }
+}
