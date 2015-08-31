@@ -1,4 +1,7 @@
 {
-	"PostRepostitory": "FileSystem",
-	"storage:FileSystemPath": "E:\\dev\\DevHawk\\Content\\"	
+  "storage": {
+    "PostRepostitory": "FileSystem",
+    "FileSystemPath": "E:\\dev\\DevHawk\\Content\\",
+    "AzureConnectionString": "UseDevelopmentStorage=true;"
+  }
 }

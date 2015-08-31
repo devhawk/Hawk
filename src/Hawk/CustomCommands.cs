@@ -12,8 +12,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Hawk
 {
-    public static class CustomCommands
+    public class CustomCommands
     {
+        IServiceProvider _provider;
+        public CustomCommands(IServiceProvider provider)
+        {
+            _provider = provider;
+        }
+
         class FuncEqualityComparer<T> : IEqualityComparer<T>
         {
             readonly Func<T, T, bool> _comparer;
@@ -41,7 +47,7 @@ namespace Hawk
             }
         }
 
-        public static void ProcessCategoriesAndTags()
+        public void ProcessCategoriesAndTags()
         {
             //TODO: read path from config
             var path = "E:\\dev\\DevHawk\\Content\\";
@@ -141,7 +147,7 @@ namespace Hawk
             }
         }
 
-        public static void WritePostsToAzure()
+        public void WritePostsToAzure()
         {
             // helper until I add async method support to CustomCommands
             WritePostsToAzureAsync().Wait();

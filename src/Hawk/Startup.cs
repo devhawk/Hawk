@@ -22,7 +22,7 @@ namespace Hawk
                 .AddJsonFile("config.json", true)
                 .AddJsonFile($"config.{env.EnvironmentName}.json", true);
 
-            builder.AddUserSecrets();
+            //builder.AddUserSecrets();
             if (env.IsDevelopment())
             {
                 builder.AddApplicationInsightsSettings(true);
@@ -61,10 +61,12 @@ namespace Hawk
             //Action load = () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
 
             // temp: syncronously load blog data from Azure dev storage
-            logger.LogInformation("Loading posts from Azure development storage");
+            var connString = Configuration.Get("storage:AzureConnectionString");
+            var account = Azure.CloudStorageAccount.Parse(connString);
+            logger.LogInformation($"Loading posts from Azure ({account.Credentials.AccountName})");
             Action load = () =>
             {
-                var loadTask = AzureRepo.LoadFromAzureAsync(Azure.CloudStorageAccount.DevelopmentStorageAccount);
+                var loadTask = AzureRepo.LoadFromAzureAsync(account);
                 loadTask.Wait();
                 MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
             };
