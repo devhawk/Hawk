@@ -35,5 +35,10 @@ namespace Hawk.Controllers
             var posts = _repo.Posts().Take(5).ToArray();
             return View(posts);
         }
+
+        public IActionResult Error()
+        {
+            return View();
+        }
     }
 }

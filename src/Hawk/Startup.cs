@@ -116,8 +116,7 @@ namespace Hawk
             }
             else
             {
-                // TODO: Add Error Handler
-                //  app.UseErrorHandler("/Home/Error");
+                app.UseErrorHandler("/Home/Error");
             }
 
             app.UseApplicationInsightsExceptionTelemetry();
