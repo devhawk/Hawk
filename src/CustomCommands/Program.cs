@@ -11,10 +11,10 @@ namespace CustomCommands
         readonly IApplicationEnvironment _appEnv;
         readonly IServiceProvider _serviceProvider;
 
-        public Program(IServiceProvider provider, IApplicationEnvironment appEnv)
+        public Program(IApplicationEnvironment appEnv, IServiceProvider serviceProvider)
         {
             _appEnv = appEnv;
-            _serviceProvider = provider;
+            _serviceProvider = serviceProvider;
         }
 
         public void Main(string[] args)
@@ -37,7 +37,11 @@ namespace CustomCommands
                 return;
             }
 
-            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, customCommandsTypeInfo.AsType());
+            var services = new ServiceCollection();
+            services.AddInstance<IApplicationEnvironment>(_appEnv);
+
+            // TODO: use reflection to determine if we should provide pass the services parameter
+            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, customCommandsTypeInfo.AsType(), services);
 
             var method = customCommandsTypeInfo.AsType().GetMethod(methodName);
             if (method == null)
@@ -46,11 +50,13 @@ namespace CustomCommands
                 return;
             }
 
-            Console.WriteLine($"Invoking {customCommandsTypeInfo.Namespace}.{customCommandsTypeInfo.Name}.{methodName}");
-            method.Invoke(instance, null);
+            var serviceProvider = services.BuildServiceProvider();
 
             // TODO: add support for async methods - get the Task back from the method and call .Wait()
             // TODO: add support for paassing unused command line args as parameters to method (require that method parameters must be strings)
+            // TODO: use reflection to determine what the parameters to pass
+            Console.WriteLine($"Invoking {customCommandsTypeInfo.Namespace}.{customCommandsTypeInfo.Name}.{methodName}");
+            method.Invoke(instance, new object[] { serviceProvider });
         }
     }
 }

@@ -4,26 +4,25 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.Configuration;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
 using Hawk.Models;
 using Hawk.Services;
+using Microsoft.Framework.OptionsModel;
 
 namespace Hawk
 {
     public class CustomCommands
     {
         readonly IApplicationEnvironment _appEnv;
-        readonly IServiceProvider _provider;
+        readonly IConfiguration _config;
 
-        public IConfiguration Configuration { get; set; }
-
-        public CustomCommands(IServiceProvider provider, IApplicationEnvironment appEnv)
+        public CustomCommands(IApplicationEnvironment appEnv, IServiceCollection services)
         {
             _appEnv = appEnv;
-            _provider = provider;
 
             var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
                 .AddJsonFile("config.json", true)
@@ -31,39 +30,17 @@ namespace Hawk
                 .AddUserSecrets()
                 .AddEnvironmentVariables();
 
-            Configuration = builder.Build();
+            _config = builder.Build();
+
+            services.AddOptions();
+            services.Configure<HawkOptions>(_config);
         }
 
-        class FuncEqualityComparer<T> : IEqualityComparer<T>
+        public void ProcessCategoriesAndTags(IServiceProvider services)
         {
-            readonly Func<T, T, bool> _comparer;
-            readonly Func<T, int> _hash;
+            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Options;
 
-            public FuncEqualityComparer(Func<T, T, bool> comparer)
-                : this(comparer, t => 0) // NB Cannot assume anything about how e.g., t.GetHashCode() interacts with the comparer's behavior
-            {
-            }
-
-            public FuncEqualityComparer(Func<T, T, bool> comparer, Func<T, int> hash)
-            {
-                _comparer = comparer;
-                _hash = hash;
-            }
-
-            public bool Equals(T x, T y)
-            {
-                return _comparer(x, y);
-            }
-
-            public int GetHashCode(T obj)
-            {
-                return _hash(obj);
-            }
-        }
-
-        public void ProcessCategoriesAndTags()
-        {
-            var path = Configuration.Get("FileSystemPath");
+            var path = hawkOptions.FileSystemPath;
             var posts = FileSystemRepo.EnumeratePosts(path);
             var comparer = new FuncEqualityComparer<Category>((a, b) => a.Slug == b.Slug, a => a.Slug.GetHashCode());
 
@@ -98,10 +75,12 @@ namespace Hawk
                 json.ToString());
         }
 
-        async Task WritePostsToAzureAsync()
+        async Task WritePostsToAzureAsync(IServiceProvider services)
         {
-            var path = Configuration.Get("FileSystemPath");
-            var storageAccount = CloudStorageAccount.Parse(Configuration.Get("AzureConnectionString"));
+            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Options;
+
+            var path = hawkOptions.FileSystemPath;
+            var storageAccount = CloudStorageAccount.Parse(hawkOptions.AzureConnectionString);
             Console.WriteLine($"Uploading posts from {path} to {storageAccount.Credentials.AccountName}");
 
             var blobClient = storageAccount.CreateCloudBlobClient();
@@ -159,15 +138,17 @@ namespace Hawk
             }
         }
 
-        public void WritePostsToAzure()
+        public void WritePostsToAzure(IServiceProvider services)
         {
             // helper until I add async method support to CustomCommands
-            WritePostsToAzureAsync().Wait();
+            WritePostsToAzureAsync(services).Wait();
         }
 
-        public void FixPaths()
+        public void FixPaths(IServiceProvider services)
         {
-            var path = Configuration.Get("FileSystemPath");
+            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Options;
+
+            var path = hawkOptions.FileSystemPath;
             var posts = FileSystemRepo.EnumeratePostDirectories(path)
                 .Reverse()
                 .Select(dir => new
@@ -186,6 +167,33 @@ namespace Hawk
                     Console.WriteLine($"fixing {oldDirName}");
                     Directory.Move(Path.Combine(path, oldDirName), Path.Combine(path, newDirName));
                 }
+            }
+        }
+
+        class FuncEqualityComparer<T> : IEqualityComparer<T>
+        {
+            readonly Func<T, T, bool> _comparer;
+            readonly Func<T, int> _hash;
+
+            public FuncEqualityComparer(Func<T, T, bool> comparer)
+                : this(comparer, t => 0) // NB Cannot assume anything about how e.g., t.GetHashCode() interacts with the comparer's behavior
+            {
+            }
+
+            public FuncEqualityComparer(Func<T, T, bool> comparer, Func<T, int> hash)
+            {
+                _comparer = comparer;
+                _hash = hash;
+            }
+
+            public bool Equals(T x, T y)
+            {
+                return _comparer(x, y);
+            }
+
+            public int GetHashCode(T obj)
+            {
+                return _hash(obj);
             }
         }
     }
