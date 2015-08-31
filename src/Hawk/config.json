@@ -1,0 +1,6 @@
+{
+  "PostRepostitory": "Azure",
+  "ApplicationInsights": {
+    "InstrumentationKey": "9b1da320-804a-4a96-921c-45262ee178bf"
+  }
+}

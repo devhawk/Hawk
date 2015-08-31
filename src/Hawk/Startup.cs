@@ -39,6 +39,7 @@ namespace Hawk
             builder.AddUserSecrets();
             if (env.IsDevelopment())
             {
+                // put ApplicationInsights in developer mode
                 builder.AddApplicationInsightsSettings(true);
             }
 
@@ -71,8 +72,33 @@ namespace Hawk
 
             var options = optionsAccessor.Options;
 
-            Action load = () => { throw new Exception("Post load action undefined"); };
+            Action load = GetContentLoader(options, env, cache, logger);
+            load();
+            cache.Set("Hawk.ReloadContent", load);
 
+            app.UseApplicationInsightsRequestTelemetry();
+
+            if (env.IsDevelopment())
+            {
+                // Only use the detailed error page in development environment.
+                app.UseErrorPage();
+            }
+            else
+            {
+                app.UseErrorHandler("/Home/Error");
+            }
+
+            app.UseMiddleware<DasBlogRedirector>();
+            app.UseMiddleware<NotFoundMiddleware>();
+
+            app.UseApplicationInsightsExceptionTelemetry();
+
+            app.UseStaticFiles(new StaticFileOptions() { ServeUnknownFileTypes = env.IsDevelopment() });
+            app.UseMvcWithDefaultRoute();
+        }
+
+        Action GetContentLoader(HawkOptions options, IHostingEnvironment env, IMemoryCache cache, ILogger logger)
+        {
             if (options.PostRepostitory == HawkOptions.PostRepositoryOptions.FileSystem)
             {
                 if (env.IsDevelopment() == false)
@@ -83,7 +109,7 @@ namespace Hawk
                 var path = options.FileSystemPath;
                 logger.LogInformation("Loading posts from {path}", path);
 
-                load = () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
+                return () => MemoryCachePostRepository.UpdateCache(cache, FileSystemRepo.EnumeratePosts(path));
             }
 
             if (options.PostRepostitory == HawkOptions.PostRepositoryOptions.Azure)
@@ -96,35 +122,16 @@ namespace Hawk
                 }
 
                 logger.LogInformation($"Loading posts from Azure ({account.Credentials.AccountName})");
-                load = () =>
+                return () =>
                 {
+                    // TODO: investiage if there is a better way to handle async operations during setup
                     var loadTask = AzureRepo.LoadFromAzureAsync(account);
                     loadTask.Wait();
                     MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
                 };
             }
 
-            load();
-            cache.Set("Hawk.ReloadContent", load);
-
-            app.UseApplicationInsightsRequestTelemetry();
-
-            // Use the error page only in development environment.
-            if (env.IsDevelopment())
-            {
-                app.UseErrorPage();
-            }
-            else
-            {
-                app.UseErrorHandler("/Home/Error");
-            }
-
-            app.UseApplicationInsightsExceptionTelemetry();
-
-            app.UseMiddleware<DasBlogRedirector>();
-            app.UseMiddleware<NotFoundMiddleware>();
-            app.UseStaticFiles(new StaticFileOptions() { ServeUnknownFileTypes = env.IsDevelopment() });
-            app.UseMvcWithDefaultRoute();
+            throw new Exception("Invalid PostRepostitory configuration setting");
         }
     }
 }
