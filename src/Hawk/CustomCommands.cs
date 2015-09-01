@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using Hawk.Models;
 using Hawk.Services;
 using Microsoft.Framework.OptionsModel;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Hawk
 {
@@ -88,6 +89,8 @@ namespace Hawk
 
             var contentContainer = blobClient.GetContainerReference("blog-content");
             await contentContainer.CreateIfNotExistsAsync();
+            await contentContainer.SetPermissionsAsync(new BlobContainerPermissions() { PublicAccess = BlobContainerPublicAccessType.Blob });
+
             var postsTable = tableClient.GetTableReference("blogPosts");
             await postsTable.CreateIfNotExistsAsync();
             var commentsTable = tableClient.GetTableReference("blogComments");
@@ -132,7 +135,7 @@ namespace Hawk
                             .Where(p => FileSystemRepo.IMG_EXTENSIONS.Contains(Path.GetExtension(p).ToLowerInvariant()));
                 foreach (var imagePath in imagePaths)
                 {
-                    var imageBlob = contentContainer.GetBlockBlobReference($"{post.Post.UniqueKey}/{Path.GetFileName(imagePath).ToLowerInvariant()}");
+                    var imageBlob = contentContainer.GetBlockBlobReference($"{post.Post.UniqueKey}/{Path.GetFileName(imagePath)}");
                     await imageBlob.UploadFromFileAsync(imagePath, FileMode.Open);
                 }
             }
