@@ -36,9 +36,36 @@ namespace Hawk.Controllers
             return View(posts);
         }
 
+        [Route("error")]
         public IActionResult Error()
         {
             return View();
+        }
+
+        IActionResult RedirectPost(Models.Post post)
+        {
+            if (post == null)
+            {
+                return HttpNotFound();
+            }
+
+            _logger.LogInformation($"{Request.Path} looks like a WP era URL. Redirecting to /blog{Request.Path}");
+
+            return Redirect("/blog" + Request.Path);
+        }
+
+        [Route("{year:int}/{month:range(1,12)}/{day:range(1,31)}/{slug}")]
+        public IActionResult Post(int year, int month, int day, string slug)
+        {
+            var post = _repo.Posts().FirstOrDefault(p => p.Date.Year == year && p.Date.Month == month && p.Date.Day == day && p.Slug == slug);
+            return RedirectPost(post);
+        }
+
+        [Route("{slug}")]
+        public IActionResult SlugPost(string slug)
+        {
+            var post = _repo.Posts().FirstOrDefault(p => p.Slug == slug);
+            return RedirectPost(post);
         }
     }
 }

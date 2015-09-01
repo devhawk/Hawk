@@ -89,8 +89,7 @@ namespace Hawk
             }
 
             app.UseMiddleware<DasBlogRedirector>();
-            app.UseMiddleware<NotFoundMiddleware>();
-
+            
             app.UseApplicationInsightsExceptionTelemetry();
 
             app.UseStaticFiles(new StaticFileOptions() { ServeUnknownFileTypes = env.IsDevelopment() });
