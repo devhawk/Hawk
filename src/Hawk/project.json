@@ -58,7 +58,7 @@
       ".\\node_modules\\.bin\\gulp.cmd css"
     ],
     "postpublish": [
-      ".\\node_modules\\.bin\\gulp.cmd output:css"
+      ".\\node_modules\\.bin\\gulp.cmd output:css clean"
     ]
   }
 }
