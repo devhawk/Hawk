@@ -209,3 +209,4 @@ FakesAssemblies/
 wwwroot/bower/*
 wwwroot/css/*.css
 src/Hawk/wwwroot/css/*.css
+src/PublishDraft/edge/*
