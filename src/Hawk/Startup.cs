@@ -25,6 +25,7 @@ namespace Hawk
         public PostRepositoryOptions PostRepostitory { get; set; }
         public string FileSystemPath { get; set; }
         public string AzureConnectionString { get; set; }
+        public string RefreshKey { get; set; }
     }
 
     public class Startup

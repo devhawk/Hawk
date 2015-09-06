@@ -5,15 +5,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Routing;
-using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Hawk.Models;
 using Hawk.Services;
 
 namespace Hawk.Controllers
 {
-	[Route("blog")]
+    [Route("blog")]
     public class BlogController : Controller
     {
         const int PAGE_SIZE = 5;
@@ -40,22 +38,6 @@ namespace Hawk.Controllers
         void Log([CallerMemberName] string methodName = null)
         {
             _logger.LogInformation(methodName);
-        }
-
-        [Route("refresh")]
-        public IActionResult Refresh()
-        {
-            _logger.LogInformation("Refreshing content");
-
-            var cache = Context.ApplicationServices.GetService<IMemoryCache>();
-
-            var reloadContent = cache.Get<Action>("Hawk.ReloadContent");
-            if (reloadContent != null)
-            {
-                reloadContent();
-            }
-
-            return RedirectToAction("Index", "Blog");
         }
 
         RouteValueDictionary GetRouteValues(int pageNum, object routeValues = null)

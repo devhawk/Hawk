@@ -1,7 +1,11 @@
 using System;
 using System.Linq;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 using Hawk.Services;
 
 namespace Hawk.Controllers
@@ -24,7 +28,7 @@ namespace Hawk.Controllers
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
-            
+
             this._repo = repo;
             this._logger = loggerFactory.CreateLogger(nameof(HomeController));
         }
@@ -41,6 +45,49 @@ namespace Hawk.Controllers
         {
             return View();
         }
+
+        [Route("refresh")]
+        public IActionResult Refresh(string key)
+        {
+            var hostEnv = Context.ApplicationServices.GetService<IHostingEnvironment>();
+            if (hostEnv == null)
+            {
+                _logger.LogError("Could not retrieve IHostingEnvironment instance from ApplicationServices");
+                throw new Exception();
+            }
+                        
+            // require https in production
+            if (hostEnv.IsProduction() && !Request.IsHttps)
+            {
+                return HttpBadRequest();
+            }
+
+            var optionsAccessor = Context.ApplicationServices.GetService<IOptions<HawkOptions>>();
+            if (optionsAccessor == null)
+            {
+                _logger.LogError("Could not retrieve IOptions<HawkOptions> instance from ApplicationServices");
+                throw new Exception();
+            }
+
+            // make sure key parmeter matches configured value
+            if (key != optionsAccessor.Options.RefreshKey)
+            {
+                return HttpBadRequest();
+            }
+            
+            _logger.LogInformation("Refreshing content");
+
+            var cache = Context.ApplicationServices.GetService<IMemoryCache>();
+
+            var reloadContent = cache.Get<Action>("Hawk.ReloadContent");
+            if (reloadContent != null)
+            {
+                reloadContent();
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
 
         IActionResult RedirectPost(Models.Post post)
         {

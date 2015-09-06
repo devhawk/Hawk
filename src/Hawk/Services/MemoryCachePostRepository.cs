@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Hawk.Models;
-using System.Threading.Tasks;
 
 namespace Hawk.Services
 {
@@ -24,33 +26,36 @@ namespace Hawk.Services
             _cache = cache;
         }
 
-        static Func<Task<TItem>> MemoizeAsync<TItem>(IMemoryCache cache, string key, Func<Task<TItem>> func, MemoryCacheEntryOptions options)
+        static Func<Task<TItem>> MemoizeAsync<TItem>(IMemoryCache cache, string key, Func<Task<TItem>> func, CancellationToken cancellationToken)
         {
+            // comments and content entries are cached for 5 minutes by default, but can be
+            // explicitly triggered to be ejected from cache on refresh
+            var entryOptions = new MemoryCacheEntryOptions()
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(5)
+            }.AddExpirationTrigger(new CancellationTokenTrigger(cancellationToken));
+
             return async () =>
             {
                 TItem item;
-                return cache.TryGetValue<TItem>(key, out item)
-                    ? item
-                    : cache.Set<TItem>(key, await func(), options);
+                return cache.TryGetValue<TItem>(key, out item) 
+                    ? item 
+                    : cache.Set<TItem>(key, await func(), entryOptions);
             };
-        }
-
-        static Func<Task<TItem>> MemoizeAsync<TItem>(IMemoryCache cache, string key, Func<Task<TItem>> func)
-        {
-            return MemoizeAsync(cache, key, func, new MemoryCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5) });
         }
 
         public static void UpdateCache(IMemoryCache cache, IEnumerable<Post> posts)
         {
+            var cts = new CancellationTokenSource();
+
             var postArray = posts
                 .Select(p => new Post
                 {
                     Author = p.Author,
                     Categories = p.Categories,
                     CommentCount = p.CommentCount,
-                    //TODO: link the cached content to the main posts cache entry so that these get ejected from cache when content is refreshed
-                    Comments = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Comments", p.Comments),
-                    Content = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Content", p.Content),
+                    Comments = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Comments", p.Comments, cts.Token),
+                    Content = MemoizeAsync(cache, $"{CLASS_NAME}.Post.{p.UniqueKey}.Content", p.Content, cts.Token),
                     DasBlogEntryId = p.DasBlogEntryId,
                     DasBlogTitle = p.DasBlogTitle,
                     DasBlogUniqueTitle = p.DasBlogUniqueTitle,
@@ -63,7 +68,11 @@ namespace Hawk.Services
                 .OrderByDescending(p => p.Date)
                 .ToArray();
 
-            cache.Set(POSTS, postArray);
+            cache.Set(POSTS, postArray, new MemoryCacheEntryOptions().RegisterPostEvictionCallback(
+                (echoKey, value, reason, substate) =>
+                {
+                    cts.Cancel();
+                }));
 
             cache.Set(TAGS, posts
                 .SelectMany(p => p.Tags)
