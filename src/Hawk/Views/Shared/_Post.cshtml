@@ -1,64 +1,83 @@
 @model Post
+@using System.IO;
 @using Microsoft.AspNet.Html.Abstractions
-@*using Humanizer*@
+@using Microsoft.Framework.WebEncoders;
+
 
 @functions
 {
-    IHtmlContent CommaSeperatedList(string intro, IEnumerable<HtmlString> items)
+    class CommaSeperatedList : IHtmlContent
     {
-        var bhc = new BufferedHtmlContent();
-        int count = items.Count();
-        
-        if (count > 0)
+        readonly string _intro;
+        readonly IEnumerable<IHtmlContent> _items;
+
+        public CommaSeperatedList(string intro, IEnumerable<IHtmlContent> items)
         {
-            bhc.Append(intro);
-            bhc.Append(" ");
-        
-            bhc.Append(items.First());
-            foreach (var item in items.Skip(1).Take(count - 2))
-            {
-                bhc.Append(", ");
-                bhc.Append(item);
-            }
-            if (count > 1)
-            {
-                bhc.Append(" & ");
-                bhc.Append(items.Last()); 
-            }
-            bhc.Append(".");
+            _intro = intro;
+            _items = items;
         }
-        
-        return bhc;
+
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        {
+            int count = _items.Count();
+
+            if (count > 0)
+            {
+                writer.Write(_intro);
+                writer.Write(" ");
+
+                _items.First().WriteTo(writer, encoder);
+
+                foreach (var item in _items.Skip(1).Take(count - 2))
+                {
+                    writer.Write(", ");
+                    item.WriteTo(writer, encoder);
+                }
+                if (count > 1)
+                {
+                    writer.Write(" & ");
+                    _items.Last().WriteTo(writer, encoder);
+                }
+                writer.Write(".");
+            }
+        }
+
+        public static CommaSeperatedList Create(string intro, IEnumerable<IHtmlContent> items)
+        {
+            return new CommaSeperatedList(intro, items);
+        }
     }
-    
-    IHtmlContent CommentText(Post post)
-    {
-        var bhc = new BufferedHtmlContent();
-        
-        if (post.CommentCount > 0)
-        {
-            var url = Url.Action("Post", "Blog", new {
-                Year = post.Date.Year,
-                Month = post.Date.Month,
-                Day = post.Date.Day,
-                Slug = post.Slug
-            });
 
-            bhc.Append("There ");
-            // TODO: Use Humanizr when it supports DNX
-            bhc.Append(post.CommentCount == 1 ? "is " : "are ");
-            bhc.Append($"<a href=\"{url}#comments\">");
-            bhc.Append(post.CommentCount.ToString());
-            bhc.Append(" comment");
-            if (post.CommentCount > 1) 
-            {
-                bhc.Append("s");
-            }
-            bhc.Append("</a>");
-            bhc.Append(". ");
+    class CommentText : IHtmlContent
+    {
+        readonly int _commentCount;
+        readonly string _url;
+
+        public CommentText(int commentCount, string url)
+        {
+            _commentCount = commentCount;
+            _url = url;
         }
 
-        return bhc;
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        {
+            if (_commentCount > 0)
+            {
+                writer.Write("There ");
+                // TODO: Use Humanizr when it supports DNX
+                writer.Write(_commentCount == 1 ? "is " : "are ");
+                writer.Write($"<a href=\"{_url}#comments\">");
+                writer.Write(_commentCount.ToString());
+                writer.Write(_commentCount > 1 ? " comments" : " comment");
+                writer.Write("</a>.");
+            }
+        }
+
+        public static CommentText Create(int commentCount, string url)
+        {
+            return new CommentText(commentCount, url);
+        }
+
     }
 }
 
@@ -70,9 +89,15 @@
     <div class="blog-post-footer">
         This entry was posted
         by <a asp-action="Author" asp-controller="Blog" asp-route-slug="@Model.Author.Slug">@Model.Author.Name</a>
-        on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM") @Model.Date.Day@Model.Date.ToString(", yyyy")</a>. 
-        @CommaSeperatedList("It was posted in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })))
-        @CommaSeperatedList("It was tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug })))
-        @CommentText(Model)
+        on <a asp-action="PostsByDay" asp-controller="Blog" asp-route-year="@Model.Date.Year" asp-route-month="@Model.Date.Month" asp-route-day="@Model.Date.Day">@Model.Date.ToString("MMMM") @Model.Date.Day@Model.Date.ToString(", yyyy")</a>.
+        @CommaSeperatedList.Create("It was posted in", Model.Categories.Select(cat => Html.ActionLink(cat.Title, "Category", new { name = cat.Slug })))
+        @CommaSeperatedList.Create("It was tagged", Model.Tags.Select(tag => Html.ActionLink(tag.Title, "Tag", new { name = tag.Slug })))
+        @CommentText.Create(Model.CommentCount, Url.Action("Post", "Blog", new
+            {
+                Model.Date.Year,
+                Model.Date.Month,
+                Model.Date.Day,
+                Model.Slug
+            }))
     </div>
 </div>

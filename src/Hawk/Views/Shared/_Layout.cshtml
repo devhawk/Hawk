@@ -1,19 +1,33 @@
-﻿@using Microsoft.AspNet.Html.Abstractions
-@using System.Text;
+﻿@using System.IO;
+@using Microsoft.AspNet.Html.Abstractions
+@using Microsoft.Framework.WebEncoders;
 
 @functions
 {
-    IHtmlContent SocialLink(string url, string iconIdentifier)
+    class SocialLink : IHtmlContent
     {
-        var bhc = new BufferedHtmlContent();
-        
-        bhc.Append("<li>"); 
-        bhc.Append("<a href=\""); bhc.Append(url); bhc.Append("\">"); 
-        bhc.Append("<i class=\"hawkicon-"); bhc.Append(iconIdentifier); bhc.Append(" social-link\"></i>"); 
-        bhc.Append("</a>"); 
-        bhc.Append("</li>");
-        
-        return bhc;
+        readonly string _url;
+        readonly string _iconIdentifier;
+
+        public SocialLink(string url, string iconIdentifier)
+        {
+            _url = url;
+            _iconIdentifier = iconIdentifier;
+        }
+
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        {
+            writer.Write("<li>");
+            writer.Write("<a href=\""); writer.Write(_url); writer.Write("\">");
+            writer.Write("<i class=\"hawkicon-"); writer.Write(_iconIdentifier); writer.Write(" social-link\"></i>");
+            writer.Write("</a>");
+            writer.Write("</li>");
+        }
+
+        public static SocialLink Create(string url, string iconIdentifier)
+        {
+            return new SocialLink(url, iconIdentifier);
+        }
     }
 }
 
@@ -69,14 +83,14 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <ul class="list-inline text-center">
-                        @SocialLink("mailto:harry@devhawk.net", "mail")
-                        @SocialLink("skype:harrypierson", "skype")
-                        @SocialLink("http://twitter.com/devhawk", "twitter")
-                        @SocialLink("https://github.com/devhawk/", "github")
-                        @SocialLink("http://stackoverflow.com/users/1179731/devhawk", "stackoverflow")
-                        @SocialLink("http://facebook.com/devhawk", "facebook")
-                        @SocialLink("https://www.linkedin.com/in/harrypierson", "linkedin")
-                        @SocialLink("http://live.xbox.com/member/RayTracer", "xbox") 
+                        @SocialLink.Create("mailto:harry@devhawk.net", "mail")
+                        @SocialLink.Create("skype:harrypierson", "skype")
+                        @SocialLink.Create("http://twitter.com/devhawk", "twitter")
+                        @SocialLink.Create("https://github.com/devhawk/", "github")
+                        @SocialLink.Create("http://stackoverflow.com/users/1179731/devhawk", "stackoverflow")
+                        @SocialLink.Create("http://facebook.com/devhawk", "facebook")
+                        @SocialLink.Create("https://www.linkedin.com/in/harrypierson", "linkedin")
+                        @SocialLink.Create("http://live.xbox.com/member/RayTracer", "xbox") 
                     </ul>
                     <p class="copyright text-muted text-center">Copyright &copy; Harry Pierson @DateTime.Now.Year</p>
                 </div>

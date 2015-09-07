@@ -2,12 +2,12 @@ using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.StaticFiles;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime;
 using Hawk.Middleware;
 using Hawk.Services;
 using Azure = Microsoft.WindowsAzure.Storage;
@@ -126,8 +126,8 @@ namespace Hawk
                 {
                     // TODO: investiage if there is a better way to handle async operations during setup
                     var loadTask = AzureRepo.LoadFromAzureAsync(account);
-                    loadTask.Wait();
-                    MemoryCachePostRepository.UpdateCache(cache, loadTask.Result);
+                    var posts = loadTask.GetAwaiter().GetResult();
+                    MemoryCachePostRepository.UpdateCache(cache, posts);
                 };
             }
 

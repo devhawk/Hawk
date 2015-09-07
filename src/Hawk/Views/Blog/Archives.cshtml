@@ -1,6 +1,8 @@
 @model IEnumerable<Post>
 @using System.Globalization
+@using System.IO;
 @using Microsoft.AspNet.Html.Abstractions
+@using Microsoft.Framework.WebEncoders;
 
 @{
     ViewBag.Title = " Archive";
@@ -14,23 +16,37 @@
         return CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthNumber);
     }
 
-    IHtmlContent CommentCount(int count) 
+    class CommentCount : IHtmlContent
     {
-        var bhc = new BufferedHtmlContent();
-        if (count > 0)
+        readonly int _count;
+
+        public CommentCount(int count)
         {
-            bhc.Append("(");
-            
-            // TODO: Convert to Humanizr when available for DNX 
-            bhc.Append(count.ToString());
-            bhc.Append(" comment");
-            if (count > 1)
-            {
-                bhc.Append("s");
-            }
-            bhc.Append(")");
+            _count = count;
         }
-        return bhc;
+
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        {
+            if (_count > 0)
+            {
+                writer.Write("(");
+
+                // TODO: Convert to Humanizr when available for DNX
+                writer.Write(_count.ToString());
+                writer.Write(" comment");
+                if (_count > 1)
+                {
+                    writer.Write("s");
+                }
+                writer.Write(")");
+            }
+        }
+
+        public static CommentCount Create(int count)
+        {
+            return new CommentCount(count);
+        }
+
     }
 }
 
@@ -45,7 +61,7 @@
             {
                 <li class="archive-post">
                     @MonthName(post.Date.Month) @post.Date.Day:
-                    <a asp-action="Post" asp-controller="Blog" asp-route-slug="@post.Slug" asp-route-year="@post.Date.Year" asp-route-month="@post.Date.Month" asp-route-day="@post.Date.Day">@post.Title @CommentCount(post.CommentCount)</a>
+                    <a asp-action="Post" asp-controller="Blog" asp-route-slug="@post.Slug" asp-route-year="@post.Date.Year" asp-route-month="@post.Date.Month" asp-route-day="@post.Date.Day">@post.Title @CommentCount.Create(post.CommentCount)</a>
                 </li>
             }
         </ul>

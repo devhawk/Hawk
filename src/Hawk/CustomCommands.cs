@@ -144,7 +144,7 @@ namespace Hawk
         public void WritePostsToAzure(IServiceProvider services)
         {
             // helper until I add async method support to CustomCommands
-            WritePostsToAzureAsync(services).Wait();
+            WritePostsToAzureAsync(services).GetAwaiter().GetResult();
         }
 
         public void FixPaths(IServiceProvider services)

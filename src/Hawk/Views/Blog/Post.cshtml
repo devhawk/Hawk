@@ -1,5 +1,7 @@
 @model Post
+@using System.IO;
 @using Microsoft.AspNet.Html.Abstractions
+@using Microsoft.Framework.WebEncoders;
 
 @{
     Layout = "_BlogLayout";
@@ -7,28 +9,41 @@
 
 @functions
 {
-    IHtmlContent CommentAuthor(CommentAuthor author)
+    class CommentAuthorContent : IHtmlContent
     {
-        var bhc = new BufferedHtmlContent();
-        var link = !string.IsNullOrEmpty(author.Url) 
-            ? author.Url
-            : !string.IsNullOrEmpty(author.Email)
-                ? "mailto:" + author.Email
-                :  null;
-        
-        if (!string.IsNullOrEmpty(link))
+        readonly CommentAuthor _author;
+
+        public CommentAuthorContent(CommentAuthor author)
         {
-            bhc.Append("<a href=\"");
-            bhc.Append(link);
-            bhc.Append("\">");
-        }
-        bhc.Append(author.Name);
-        if (!string.IsNullOrEmpty(link))
-        {
-            bhc.Append("</a>");
+            _author = author;
         }
 
-        return bhc;
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        {
+            var link = !string.IsNullOrEmpty(_author.Url)
+                ? _author.Url
+                : !string.IsNullOrEmpty(_author.Email)
+                    ? "mailto:" + _author.Email
+                    : null;
+
+            if (!string.IsNullOrEmpty(link))
+            {
+                writer.Write("<a href=\"");
+                writer.Write(link);
+                writer.Write("\">");
+            }
+            writer.Write(_author.Name);
+            if (!string.IsNullOrEmpty(link))
+            {
+                writer.Write("</a>");
+            }
+        }
+
+        public static CommentAuthorContent Create(CommentAuthor author)
+        {
+            return new CommentAuthorContent(author);
+
+        }
     }
 }
 
@@ -43,7 +58,7 @@
             <div class="blog-comment">
                 <div class="blog-comment-content">@Html.Raw(comment.Content)</div>
                 <div class="blog-comment-footer">
-                    This comment was posted by @CommentAuthor(comment.Author) 
+                    This comment was posted by @CommentAuthorContent.Create(comment.Author) 
                     on @comment.Date.ToString("MMMM") @comment.Date.Day@comment.Date.ToString(", yyyy") 
                     at @comment.Date.ToString("h:mm tt").
                 </div>
