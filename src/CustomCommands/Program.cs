@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime;
 
 namespace CustomCommands
 {
@@ -37,18 +37,18 @@ namespace CustomCommands
                 return;
             }
 
-            var services = new ServiceCollection();
-            services.AddInstance<IApplicationEnvironment>(_appEnv);
-
-            // TODO: use reflection to determine if we should provide pass the services parameter
-            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, customCommandsTypeInfo.AsType(), services);
-
             var method = customCommandsTypeInfo.AsType().GetMethod(methodName);
             if (method == null)
             {
                 Console.WriteLine($"Couldn't locate a method named {methodName} in {customCommandsTypeInfo.Namespace}.{customCommandsTypeInfo.Name}");
                 return;
             }
+
+            var services = new ServiceCollection();
+            services.AddInstance<IApplicationEnvironment>(_appEnv);
+
+            // TODO: use reflection to determine if we should provide pass the services parameter
+            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, customCommandsTypeInfo.AsType(), services);
 
             var serviceProvider = services.BuildServiceProvider();
 

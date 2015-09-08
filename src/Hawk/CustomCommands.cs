@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
@@ -13,6 +12,7 @@ using Hawk.Models;
 using Hawk.Services;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.Dnx.Runtime;
 
 namespace Hawk
 {
