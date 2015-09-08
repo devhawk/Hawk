@@ -55,26 +55,29 @@ namespace Hawk.Controllers
                 _logger.LogError("Could not retrieve IHostingEnvironment instance from ApplicationServices");
                 throw new Exception();
             }
-                        
-            // require https in production
-            if (hostEnv.IsProduction() && !Request.IsHttps)
+
+            if (hostEnv.IsProduction())
             {
-                return HttpBadRequest();
+                // require https in production
+                if (!Request.IsHttps)
+                {
+                    return HttpBadRequest();
+                }
+
+                var optionsAccessor = Context.ApplicationServices.GetService<IOptions<HawkOptions>>();
+                if (optionsAccessor == null)
+                {
+                    _logger.LogError("Could not retrieve IOptions<HawkOptions> instance from ApplicationServices");
+                    throw new Exception();
+                }
+
+                // make sure key parmeter matches configured value
+                if (key != optionsAccessor.Options.RefreshKey)
+                {
+                    return HttpBadRequest();
+                }
             }
 
-            var optionsAccessor = Context.ApplicationServices.GetService<IOptions<HawkOptions>>();
-            if (optionsAccessor == null)
-            {
-                _logger.LogError("Could not retrieve IOptions<HawkOptions> instance from ApplicationServices");
-                throw new Exception();
-            }
-
-            // make sure key parmeter matches configured value
-            if (key != optionsAccessor.Options.RefreshKey)
-            {
-                return HttpBadRequest();
-            }
-            
             _logger.LogInformation("Refreshing content");
 
             var cache = Context.ApplicationServices.GetService<IMemoryCache>();
@@ -85,9 +88,8 @@ namespace Hawk.Controllers
                 reloadContent();
             }
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Blog");
         }
-
 
         IActionResult RedirectPost(Models.Post post)
         {
