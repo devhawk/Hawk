@@ -2,8 +2,8 @@
   "name": "Hawk",
   "version": "0.0.0",
   "devDependencies": {
-    "bower": "^1.4.1",
-    "del": "^1.2.0",
+    "bower": "^1.6.5",
+    "del": "^2.0.2",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-cssmin": "^0.1.7",

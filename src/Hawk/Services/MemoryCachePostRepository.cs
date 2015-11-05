@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 using Hawk.Models;
+using Microsoft.Framework.Primitives;
 
 namespace Hawk.Services
 {
@@ -33,7 +34,7 @@ namespace Hawk.Services
             var entryOptions = new MemoryCacheEntryOptions()
             {
                 SlidingExpiration = TimeSpan.FromMinutes(5)
-            }.AddExpirationTrigger(new CancellationTokenTrigger(cancellationToken));
+            }.AddExpirationToken(new CancellationChangeToken(cancellationToken));
 
             return async () =>
             {

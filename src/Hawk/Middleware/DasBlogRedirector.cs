@@ -196,7 +196,7 @@ namespace Hawk.Middleware
 				var repo = req.HttpContext.ApplicationServices.GetRequiredService<IPostRepository>();
 
 				logger.LogInformation("Checking {Path}{QueryString}", req.Path, req.QueryString);
-                var redirectUrl = GetRedirector(logger, repo)(req.Path.Value, req.Query.Get);
+                var redirectUrl = GetRedirector(logger, repo)(req.Path.Value, k => req.Query[k].ToString());
 				
 				if (redirectUrl == null)
 				{

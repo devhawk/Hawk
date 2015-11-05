@@ -25,7 +25,8 @@ namespace Hawk
         {
             _appEnv = appEnv;
 
-            var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(appEnv.ApplicationBasePath)
                 .AddJsonFile("config.json", true)
                 .AddJsonFile($"config.development.json", true)
                 .AddUserSecrets()
@@ -39,7 +40,7 @@ namespace Hawk
 
         public void ProcessCategoriesAndTags(IServiceProvider services)
         {
-            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Options;
+            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Value;
 
             var path = hawkOptions.FileSystemPath;
             var posts = FileSystemRepo.EnumeratePosts(path);
@@ -78,7 +79,7 @@ namespace Hawk
 
         async Task WritePostsToAzureAsync(IServiceProvider services)
         {
-            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Options;
+            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Value;
 
             var path = hawkOptions.FileSystemPath;
             var storageAccount = CloudStorageAccount.Parse(hawkOptions.AzureConnectionString);
@@ -149,7 +150,7 @@ namespace Hawk
 
         public void FixPaths(IServiceProvider services)
         {
-            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Options;
+            var hawkOptions = services.GetService<IOptions<HawkOptions>>().Value;
 
             var path = hawkOptions.FileSystemPath;
             var posts = FileSystemRepo.EnumeratePostDirectories(path)

@@ -49,7 +49,7 @@ namespace Hawk.Controllers
         [Route("refresh")]
         public IActionResult Refresh(string key)
         {
-            var hostEnv = Context.ApplicationServices.GetService<IHostingEnvironment>();
+            var hostEnv = HttpContext.ApplicationServices.GetService<IHostingEnvironment>();
             if (hostEnv == null)
             {
                 _logger.LogError("Could not retrieve IHostingEnvironment instance from ApplicationServices");
@@ -64,7 +64,7 @@ namespace Hawk.Controllers
                     return HttpBadRequest();
                 }
 
-                var optionsAccessor = Context.ApplicationServices.GetService<IOptions<HawkOptions>>();
+                var optionsAccessor = HttpContext.ApplicationServices.GetService<IOptions<HawkOptions>>();
                 if (optionsAccessor == null)
                 {
                     _logger.LogError("Could not retrieve IOptions<HawkOptions> instance from ApplicationServices");
@@ -72,7 +72,7 @@ namespace Hawk.Controllers
                 }
 
                 // make sure key parmeter matches configured value
-                if (key != optionsAccessor.Options.RefreshKey)
+                if (key != optionsAccessor.Value.RefreshKey)
                 {
                     return HttpBadRequest();
                 }
@@ -80,7 +80,7 @@ namespace Hawk.Controllers
 
             _logger.LogInformation("Refreshing content");
 
-            var cache = Context.ApplicationServices.GetService<IMemoryCache>();
+            var cache = HttpContext.ApplicationServices.GetService<IMemoryCache>();
 
             var reloadContent = cache.Get<Action>("Hawk.ReloadContent");
             if (reloadContent != null)

@@ -33,7 +33,8 @@ namespace Hawk
         public Startup(IHostingEnvironment env, IApplicationEnvironment appEnv)
         {
             // Setup configuration sources.
-            var builder = new ConfigurationBuilder(appEnv.ApplicationBasePath)
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(appEnv.ApplicationBasePath)
                 .AddJsonFile("config.json", true)
                 .AddJsonFile($"config.{env.EnvironmentName}.json", true);
 
@@ -71,7 +72,7 @@ namespace Hawk
 
             var logger = loggerFactory.CreateLogger(nameof(Startup));
 
-            var options = optionsAccessor.Options;
+            var options = optionsAccessor.Value;
 
             Action load = GetContentLoader(options, env, cache, logger);
             load();
@@ -82,11 +83,12 @@ namespace Hawk
             if (env.IsDevelopment())
             {
                 // Only use the detailed error page in development environment.
-                app.UseErrorPage();
+                app.UseBrowserLink();
+                app.UseDeveloperExceptionPage();
             }
             else
             {
-                app.UseErrorHandler("/Home/Error");
+                app.UseExceptionHandler("/Home/Error");
             }
 
             app.UseMiddleware<DasBlogRedirector>();
